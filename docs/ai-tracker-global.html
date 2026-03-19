@@ -2162,30 +2162,35 @@ async function enrichVisible() {
   renderResults();
 }
 
-async function generateBriefing() {
+async function generateBriefing(force = false) {
   if (!PROXY_BASE) return;
   const btn = document.querySelector('.briefing-gen-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
 
-  const items = getVisible()
-    .map(i => ({...i, _imp:(enrichmentMap[i.id]?.importance||2)}))
-    .sort((a,b) => b._imp - a._imp).slice(0,25);
+  // Get all visible items — don't sort/truncate here, let the worker handle it
+  // Pass taxonomy so the worker can guarantee regulation items are never dropped
+  const items = getVisible().slice(0, 40);
 
   const payload = items.map(i => ({
-    title: i.title, summary: (i.summary||'').slice(0,160),
-    source: i.source||'', country: i.country||'',
-    soWhat: enrichmentMap[i.id]?.soWhat||null,
-    importance: enrichmentMap[i.id]?.importance||2
+    title:            i.title,
+    summary:          (i.summary||'').slice(0, 160),
+    source:           i.source   || '',
+    country:          i.country  || '',
+    taxonomy:         i.taxonomy || [],
+    soWhat:           enrichmentMap[i.id]?.soWhat           || null,
+    importance:       enrichmentMap[i.id]?.importance        || 2,
+    priorityCategory: enrichmentMap[i.id]?.priorityCategory  || null,
   }));
 
   try {
     const res = await fetch(`${PROXY_BASE}/briefing`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ articles: payload }),
-      signal: AbortSignal.timeout(45000)
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ articles: payload, force }),
+      signal:  AbortSignal.timeout(45000)
     });
     if (res.status === 429) {
-      showRateLimitWarning('Rate limit reached. Briefing is cached per 4-hour window.');
+      showRateLimitWarning('Rate limit reached. Try again in an hour.');
     } else if (res.ok) {
       const data = await res.json();
       renderBriefingPanel(data.briefing, data.generatedAt, data.cached);
@@ -2214,7 +2219,7 @@ function renderBriefingPanel(text, generatedAt, cached) {
       <div class="briefing-panel-body open">
         <div class="briefing-text">${formatted}</div>
         <div class="briefing-actions">
-          <button class="briefing-gen-btn" onclick="generateBriefing()">Regenerate</button>
+          <button class="briefing-gen-btn" onclick="generateBriefing(true)">Regenerate</button>
           <span class="rl-warning" id="rlWarning2"></span>
         </div>
       </div>
