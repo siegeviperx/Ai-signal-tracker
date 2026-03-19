@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Signal — Global Intelligence Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Literata:ital,wght@0,300;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c0e;--surface:#141417;--surface2:#1c1c20;--surface3:#222226;
+  --border:rgba(255,255,255,0.08);--border-strong:rgba(255,255,255,0.15);
+  --text:#e8e6df;--text-muted:#7a7870;--text-dim:#4a4845;
+  --accent:#c8f135;--accent-dim:rgba(200,241,53,0.08);--accent-border:rgba(200,241,53,0.25);
+  --red:#ff5f5f;--amber:#f5a623;--blue:#5ba3f5;--teal:#3dd6b0;--purple:#b08ef5;--pink:#f57ab0;
+  --mono:'IBM Plex Mono',monospace;--serif:'Literata',Georgia,serif;--sans:'DM Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;font-weight:300;min-height:100vh;line-height:1.6;}
+
+/* HEADER */
+.site-header{border-bottom:0.5px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(12,12,14,0.97);backdrop-filter:blur(12px);z-index:100;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-mark{width:26px;height:26px;border:1px solid var(--accent);border-radius:4px;display:grid;place-items:center;}
+.logo-text{font-family:var(--mono);font-size:11px;letter-spacing:0.14em;color:var(--text);text-transform:uppercase;}
+.logo-sub{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.08em;margin-top:1px;}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim);flex-shrink:0;}
+.status-dot.live{background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 2s infinite;}
+.status-dot.scanning{background:var(--amber);box-shadow:0 0 8px var(--amber);animation:pulse 0.7s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+.status-label{font-family:var(--mono);font-size:10px;color:var(--text-muted);letter-spacing:0.08em;}
+#timestamp{font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+.sources-badge{font-family:var(--mono);font-size:9px;color:var(--text-dim);border:0.5px solid var(--border);padding:3px 10px;border-radius:20px;letter-spacing:0.06em;}
+
+/* LAYOUT */
+.main{display:grid;grid-template-columns:268px 1fr;min-height:calc(100vh - 54px);}
+
+/* SIDEBAR */
+.sidebar{border-right:0.5px solid var(--border);padding:16px 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto;}
+.sidebar-section{margin-bottom:20px;}
+.sidebar-label{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--text-dim);text-transform:uppercase;padding:0 18px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;}
+.topic-btn{display:flex;align-items:center;gap:9px;width:100%;padding:7px 18px;background:none;border:none;cursor:pointer;text-align:left;color:var(--text-muted);font-family:var(--sans);font-size:12.5px;font-weight:300;transition:all 0.15s;position:relative;}
+.topic-btn:hover{color:var(--text);background:var(--surface);}
+.topic-btn.active{color:var(--text);background:var(--surface);}
+.topic-btn.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);}
+.topic-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.topic-count{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text-dim);background:var(--surface2);padding:1px 6px;border-radius:3px;min-width:20px;text-align:center;}
+.scan-all-btn{margin:0 12px;width:calc(100% - 24px);padding:8px 12px;background:var(--accent-dim);border:0.5px solid var(--accent-border);border-radius:6px;color:var(--accent);font-family:var(--mono);font-size:10px;letter-spacing:0.1em;cursor:pointer;text-transform:uppercase;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.scan-all-btn:hover:not(:disabled){background:rgba(200,241,53,0.16);}
+.scan-all-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.filter-area{padding:0 18px;}
+.filter-label{font-family:var(--mono);font-size:9px;letter-spacing:0.18em;color:var(--text-dim);text-transform:uppercase;margin-bottom:7px;}
+.filter-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.chip{padding:3px 9px;border-radius:20px;font-size:10px;font-family:var(--mono);border:0.5px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;transition:all 0.15s;letter-spacing:0.04em;}
+.chip:hover{border-color:var(--border-strong);color:var(--text);}
+.chip.active{border-color:var(--accent-border);color:var(--accent);background:var(--accent-dim);}
+.chip.spike{border-color:rgba(245,166,35,0.4);color:var(--amber);}
+
+/* WATCHLIST */
+.watchlist-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.watch-chip{padding:2px 8px;border-radius:3px;font-size:9px;font-family:var(--mono);border:0.5px solid var(--border);background:none;color:var(--text-dim);cursor:pointer;transition:all 0.15s;letter-spacing:0.04em;text-transform:uppercase;}
+.watch-chip:hover{border-color:var(--border-strong);color:var(--text-muted);}
+.watch-chip.active{border-color:rgba(176,142,245,0.4);color:var(--purple);background:rgba(176,142,245,0.08);}
+
+/* COUNTRY FILTER */
+.country-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.country-chip{padding:2px 7px;border-radius:3px;font-size:10px;font-family:var(--mono);border:0.5px solid var(--border);background:none;color:var(--text-dim);cursor:pointer;transition:all 0.15s;}
+.country-chip:hover{border-color:var(--border-strong);color:var(--text-muted);}
+.country-chip.active{border-color:rgba(61,214,176,0.4);color:var(--teal);background:rgba(61,214,176,0.07);}
+
+/* SOURCE HEALTH */
+.source-health{padding:0 18px;}
+.health-row{display:flex;align-items:center;gap:8px;padding:2px 0;font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+.health-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--text-dim);}
+.health-dot.ok{background:var(--teal);}
+.health-dot.err{background:var(--red);}
+.health-dot.idle{background:var(--text-dim);}
+.health-name{flex:1;}
+.health-count{color:var(--text-dim);font-size:9px;}
+
+/* CONTENT */
+.content{padding:22px 26px;}
+.content-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;padding-bottom:14px;border-bottom:0.5px solid var(--border);gap:16px;}
+.view-title{font-family:var(--serif);font-size:20px;font-weight:300;color:var(--text);line-height:1.3;}
+.view-meta{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-top:3px;letter-spacing:0.05em;}
+.header-btns{display:flex;gap:8px;flex-shrink:0;}
+.fetch-btn{padding:7px 14px;border:0.5px solid var(--border-strong);border-radius:5px;background:none;color:var(--text-muted);font-family:var(--mono);font-size:10px;letter-spacing:0.1em;cursor:pointer;text-transform:uppercase;display:flex;align-items:center;gap:7px;transition:all 0.2s;white-space:nowrap;}
+.fetch-btn:hover:not(:disabled){color:var(--text);border-color:var(--accent-border);background:var(--accent-dim);}
+.fetch-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.fetch-btn.global{border-color:rgba(61,214,176,0.3);color:var(--teal);}
+.fetch-btn.global:hover:not(:disabled){border-color:var(--teal);background:rgba(61,214,176,0.08);}
+
+/* SPIKE ALERT BANNER */
+.spike-banner{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;margin-bottom:16px;background:rgba(245,166,35,0.07);border:0.5px solid rgba(245,166,35,0.25);border-radius:6px;}
+.spike-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
+.spike-body{flex:1;}
+.spike-title{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;}
+.spike-items{font-size:11.5px;color:var(--text-muted);line-height:1.6;}
+.spike-items strong{color:var(--amber);font-weight:500;}
+
+/* LOADING */
+.loading-state{padding:48px 0;text-align:center;color:var(--text-dim);font-family:var(--mono);font-size:11px;letter-spacing:0.08em;}
+.spinner{width:18px;height:18px;border:1.5px solid var(--surface2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.75s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-sub{margin-top:6px;font-size:10px;color:var(--text-dim);}
+
+/* BRIEFING BAR */
+.briefing-bar{display:flex;align-items:center;gap:10px;padding:8px 0;margin-bottom:14px;font-family:var(--mono);font-size:10px;color:var(--text-dim);border-bottom:0.5px solid var(--border);flex-wrap:wrap;}
+.briefing-bar span{color:var(--text-muted);}
+.b-div{color:var(--text-dim)!important;}
+.src-pill{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:3px;letter-spacing:0.06em;}
+.src-hn{background:rgba(245,166,35,0.12);color:#f5a623;}
+.src-arxiv{background:rgba(61,214,176,0.12);color:#3dd6b0;}
+.src-devto{background:rgba(176,142,245,0.12);color:#b08ef5;}
+.src-scholar{background:rgba(91,163,245,0.12);color:#5ba3f5;}
+.src-gnews{background:rgba(255,95,95,0.12);color:#ff7a7a;}
+.src-gdelt{background:rgba(200,241,53,0.12);color:#c8f135;}
+
+/* CARDS */
+.cards-grid{display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:8px;overflow:hidden;}
+.card{background:var(--surface);padding:14px 18px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;transition:background 0.12s;}
+.card:hover{background:var(--surface2);}
+.card-meta{display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap;}
+.card-type{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;padding:2px 7px;border-radius:3px;}
+.type-hn{background:rgba(245,166,35,0.12);color:#f5a623;}
+.type-arxiv{background:rgba(61,214,176,0.12);color:#3dd6b0;}
+.type-devto{background:rgba(176,142,245,0.12);color:#b08ef5;}
+.type-scholar{background:rgba(91,163,245,0.12);color:#5ba3f5;}
+.type-gnews{background:rgba(255,95,95,0.12);color:#ff7a7a;}
+.type-gdelt{background:rgba(200,241,53,0.12);color:#c8f135;}
+
+/* COUNTRY + LANG BADGES */
+.card-country{font-family:var(--mono);font-size:10px;color:var(--teal);letter-spacing:0.04em;}
+.card-lang{font-family:var(--mono);font-size:9px;color:var(--text-dim);padding:1px 6px;border:0.5px solid rgba(61,214,176,0.2);border-radius:3px;text-transform:uppercase;letter-spacing:0.06em;}
+.card-lang.foreign{color:var(--amber);border-color:rgba(245,166,35,0.25);}
+.card-source{font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+.card-date{font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+
+.card-title{font-family:var(--serif);font-size:14.5px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:4px;}
+.card-title a{color:inherit;text-decoration:none;border-bottom:0.5px solid transparent;transition:border-color 0.12s;}
+.card-title a:hover{border-bottom-color:var(--text-muted);}
+.card-summary{font-size:12px;color:var(--text-muted);line-height:1.65;font-weight:300;max-width:680px;}
+
+/* TAXONOMY + ENTITY CHIPS */
+.card-taxonomy{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.tax-chip{font-family:var(--mono);font-size:9px;letter-spacing:0.06em;text-transform:uppercase;padding:2px 7px;border-radius:3px;}
+.tax-regulation{background:rgba(255,95,95,0.1);color:#ff7a7a;}
+.tax-chips-hw{background:rgba(245,166,35,0.1);color:#f5a623;}
+.tax-funding{background:rgba(61,214,176,0.1);color:#3dd6b0;}
+.tax-safety{background:rgba(176,142,245,0.1);color:#b08ef5;}
+.tax-models{background:rgba(200,241,53,0.1);color:#c8f135;}
+.tax-defense{background:rgba(255,95,95,0.14);color:#ff5f5f;}
+.tax-labor{background:rgba(91,163,245,0.1);color:#5ba3f5;}
+.tax-copyright{background:rgba(245,166,35,0.1);color:#f5c623;}
+.tax-compute{background:rgba(61,214,176,0.08);color:#3dd6b0;}
+.tax-sovereign{background:rgba(176,142,245,0.14);color:#c08ef5;}
+.tax-minerals{background:rgba(139,111,71,0.18);color:#c8a97a;}
+
+/* TRANSLATION */
+.card-title-translated{font-size:11.5px;color:var(--text-dim);font-family:var(--mono);margin-top:2px;font-style:italic;}
+.card-title-translated::before{content:'EN: ';color:var(--teal);font-style:normal;}
+.summary-translated{font-size:11.5px;color:var(--text-dim);margin-top:3px;line-height:1.5;font-style:italic;border-left:2px solid rgba(61,214,176,0.2);padding-left:8px;}
+.translating{opacity:0.4;font-size:10px;font-family:var(--mono);color:var(--text-dim);margin-top:3px;}
+.translate-toggle{display:flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);border:0.5px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;transition:all 0.15s;letter-spacing:0.04em;}
+.translate-toggle:hover{border-color:rgba(61,214,176,0.4);color:var(--teal);}
+.translate-toggle.active{border-color:rgba(61,214,176,0.4);color:var(--teal);background:rgba(61,214,176,0.07);}
+.translate-toggle .t-dot{width:6px;height:6px;border-radius:50%;background:var(--text-dim);flex-shrink:0;transition:background 0.15s;}
+.translate-toggle.active .t-dot{background:var(--teal);box-shadow:0 0 6px var(--teal);}
+
+/* WATCHLIST HIT */
+.card.watchlist-hit{border-left:2px solid var(--purple);}
+.watchlist-badge{font-family:var(--mono);font-size:9px;color:var(--purple);background:rgba(176,142,245,0.1);border:0.5px solid rgba(176,142,245,0.25);padding:2px 7px;border-radius:3px;letter-spacing:0.06em;}
+
+/* SPIKE INDICATOR ON CARD */
+.spike-flag{font-family:var(--mono);font-size:9px;color:var(--amber);background:rgba(245,166,35,0.1);border:0.5px solid rgba(245,166,35,0.25);padding:2px 7px;border-radius:3px;letter-spacing:0.06em;}
+
+/* TRANSLATE LINK */
+.translate-btn{font-family:var(--mono);font-size:9px;color:var(--amber);text-decoration:none;border:0.5px solid rgba(245,166,35,0.25);padding:2px 8px;border-radius:3px;display:inline-flex;align-items:center;gap:3px;transition:all 0.12s;}
+.translate-btn:hover{background:rgba(245,166,35,0.1);}
+
+/* SIGNAL BRIEF */
+.signal-brief{display:flex;align-items:flex-start;gap:7px;margin-top:8px;padding:6px 10px;border-radius:4px;background:rgba(200,241,53,0.04);border-left:2px solid var(--accent-border);}
+.signal-brief-icon{font-size:10px;line-height:1;flex-shrink:0;margin-top:1px;opacity:0.6;}
+.signal-brief-text{font-size:11px;color:rgba(200,241,53,0.7);line-height:1.55;font-family:var(--sans);font-weight:300;font-style:italic;}
+.signal-tier-high .signal-brief{background:rgba(200,241,53,0.07);border-left-color:var(--accent);}
+.signal-tier-high .signal-brief-text{color:rgba(200,241,53,0.9);}
+.signal-tier-med .signal-brief{background:rgba(91,163,245,0.05);border-left-color:rgba(91,163,245,0.3);}
+.signal-tier-med .signal-brief-text{color:rgba(91,163,245,0.75);}
+.signal-tier-low .signal-brief{background:var(--surface2);border-left-color:var(--border);}
+.signal-tier-low .signal-brief-text{color:var(--text-dim);}
+
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.card-tag{font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);border:0.5px solid var(--border);padding:2px 6px;border-radius:3px;}
+.card-right{display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:2px;}
+.card-score{font-family:var(--mono);font-size:10px;color:var(--amber);}
+.card-link-btn{font-family:var(--mono);font-size:10px;color:var(--text-dim);text-decoration:none;border:0.5px solid var(--border);padding:4px 9px;border-radius:4px;white-space:nowrap;transition:all 0.12s;display:inline-flex;align-items:center;gap:4px;}
+.card-link-btn:hover{color:var(--accent);border-color:var(--accent-border);background:var(--accent-dim);}
+
+/* LOCAL ORIGIN WARNING */
+.local-warning{margin:16px 0;padding:16px 20px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.35);border-left:3px solid var(--amber);border-radius:6px;}
+.local-warning-title{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.local-warning-body{font-size:12.5px;color:var(--text-muted);line-height:1.75;}
+.local-warning-body strong{color:var(--text);font-weight:500;}
+.local-warning-body code{font-family:var(--mono);font-size:11px;background:var(--surface2);padding:2px 7px;border-radius:3px;color:var(--accent);}
+.local-warning-body ol{margin:10px 0 0 18px;display:flex;flex-direction:column;gap:5px;}
+.local-warning-divider{margin:10px 0;border:none;border-top:0.5px solid var(--border);}
+
+/* EMPTY */
+.empty-state{padding:56px 0;text-align:center;color:var(--text-dim);}
+.empty-icon{font-size:28px;margin-bottom:10px;opacity:0.35;}
+.empty-title{font-family:var(--serif);font-size:16px;color:var(--text-muted);margin-bottom:5px;}
+.empty-sub{font-size:12px;color:var(--text-dim);line-height:1.7;}
+
+/* ERROR LOG PANEL */
+.error-panel{margin-bottom:16px;border:0.5px solid rgba(255,95,95,0.3);border-radius:6px;overflow:hidden;}
+.error-panel-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,95,95,0.07);cursor:pointer;user-select:none;}
+.error-panel-title{font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:0.1em;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
+.error-panel-toggle{font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+.error-panel-body{padding:10px 14px;display:flex;flex-direction:column;gap:8px;}
+.error-row{display:flex;flex-direction:column;gap:3px;padding:8px 10px;border-radius:4px;background:var(--surface2);}
+.error-row-header{display:flex;align-items:center;gap:8px;}
+.error-source-tag{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:3px;background:rgba(255,95,95,0.12);color:var(--red);}
+.error-cause{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:0.04em;}
+.error-detail{font-size:11.5px;color:var(--text-muted);line-height:1.55;}
+.error-action{font-size:11px;color:var(--text-dim);font-style:italic;margin-top:2px;}
+.error-raw{font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-top:3px;opacity:0.6;}
+
+/* EXPANDED HEALTH ROW */
+.health-row{display:flex;align-items:center;gap:8px;padding:2px 0;font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+.health-reason{font-size:9px;color:rgba(255,95,95,0.7);display:block;padding-left:14px;margin-top:1px;line-height:1.4;font-family:var(--sans);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:0.5px solid rgba(255,95,95,0.35);border-left:2px solid var(--red);border-radius:6px;padding:10px 14px;max-width:340px;z-index:9999;display:none;}
+.toast.show{display:block;animation:fadeIn 0.2s;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.toast-title{font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:0.08em;margin-bottom:3px;text-transform:uppercase;}
+.toast-msg{font-size:12px;color:var(--text-muted);}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <rect x="1" y="1" width="5" height="5" rx="1" fill="#c8f135"/>
+        <rect x="8" y="1" width="5" height="5" rx="1" fill="#c8f135" opacity="0.4"/>
+        <rect x="1" y="8" width="5" height="5" rx="1" fill="#c8f135" opacity="0.4"/>
+        <rect x="8" y="8" width="5" height="5" rx="1" fill="#c8f135" opacity="0.2"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">AI Signal</div>
+      <div class="logo-sub">Global Intelligence Tracker · No login required</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="translate-toggle active" id="translateToggle" onclick="toggleAutoTranslate()">
+      <span class="t-dot"></span>Auto-Translate
+    </button>
+    <div class="sources-badge">HN · ArXiv · DEV.to · Scholar · G.News · GDELT</div>
+    <div class="status-dot" id="statusDot"></div>
+    <div class="status-label" id="statusLabel">Ready</div>
+    <div id="timestamp">—</div>
+  </div>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Topics</div>
+      <button class="topic-btn active" onclick="setTopic('all',this)">
+        <span class="topic-dot" style="background:#7a7870"></span>All Topics
+        <span class="topic-count" id="count-all">0</span>
+      </button>
+      <button class="topic-btn" onclick="setTopic('agents',this)">
+        <span class="topic-dot" style="background:#3dd6b0"></span>Agentic Frameworks
+        <span class="topic-count" id="count-agents">0</span>
+      </button>
+      <button class="topic-btn" onclick="setTopic('frontier',this)">
+        <span class="topic-dot" style="background:#c8f135"></span>Frontier Models
+        <span class="topic-count" id="count-frontier">0</span>
+      </button>
+      <button class="topic-btn" onclick="setTopic('testing',this)">
+        <span class="topic-dot" style="background:#5ba3f5"></span>AI Testing &amp; Evals
+        <span class="topic-count" id="count-testing">0</span>
+      </button>
+      <button class="topic-btn" onclick="setTopic('simulation',this)">
+        <span class="topic-dot" style="background:#b08ef5"></span>AI Simulation
+        <span class="topic-count" id="count-simulation">0</span>
+      </button>
+      <button class="topic-btn" onclick="setTopic('enterprise',this)">
+        <span class="topic-dot" style="background:#f5a623"></span>Enterprise AI
+        <span class="topic-count" id="count-enterprise">0</span>
+      </button>
+      <button class="topic-btn" onclick="setTopic('research',this)">
+        <span class="topic-dot" style="background:#f57ab0"></span>Research &amp; Papers
+        <span class="topic-count" id="count-research">0</span>
+      </button>
+      <button class="topic-btn" onclick="setTopic('global',this)">
+        <span class="topic-dot" style="background:#c8f135"></span>Global Signals
+        <span class="topic-count" id="count-global">0</span>
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="scan-all-btn" id="scanAllBtn" onclick="scanAll()">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path d="M6 1v2M6 9v2M1 6h2M9 6h2M2.5 2.5l1.4 1.4M8.1 8.1l1.4 1.4M2.5 9.5l1.4-1.4M8.1 3.9l1.4-1.4" stroke="#c8f135" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Scan All Topics
+      </button>
+    </div>
+
+    <div class="sidebar-section filter-area">
+      <div class="filter-label">Watchlist</div>
+      <div class="watchlist-chips" id="watchlistChips"></div>
+    </div>
+
+    <div class="sidebar-section filter-area">
+      <div class="filter-label">Country Focus</div>
+      <div class="country-chips" id="countryChips"></div>
+    </div>
+
+    <div class="sidebar-section filter-area">
+      <div class="filter-label">Taxonomy</div>
+      <div class="filter-chips" id="taxChips">
+        <button class="chip active" onclick="setTax('all',this)">All</button>
+        <button class="chip" onclick="setTax('models',this)">Models</button>
+        <button class="chip" onclick="setTax('regulation',this)">Regulation</button>
+        <button class="chip" onclick="setTax('chips-hw',this)">Chips</button>
+        <button class="chip" onclick="setTax('funding',this)">Funding</button>
+        <button class="chip" onclick="setTax('safety',this)">Safety</button>
+        <button class="chip" onclick="setTax('defense',this)">Defense</button>
+        <button class="chip" onclick="setTax('labor',this)">Labor</button>
+        <button class="chip" onclick="setTax('compute',this)">Compute</button>
+        <button class="chip" onclick="setTax('sovereign',this)">Sovereign</button>
+        <button class="chip" onclick="setTax('copyright',this)">Copyright</button>
+        <button class="chip" onclick="setTax('minerals',this)">Minerals</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section filter-area">
+      <div class="filter-label">Source</div>
+      <div class="filter-chips">
+        <button class="chip active" onclick="setFilter('all',this)">All</button>
+        <button class="chip" onclick="setFilter('hn',this)">HN</button>
+        <button class="chip" onclick="setFilter('arxiv',this)">ArXiv</button>
+        <button class="chip" onclick="setFilter('devto',this)">DEV.to</button>
+        <button class="chip" onclick="setFilter('scholar',this)">Scholar</button>
+        <button class="chip" onclick="setFilter('gnews',this)">G.News</button>
+        <button class="chip" onclick="setFilter('gdelt',this)">GDELT</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section filter-area">
+      <div class="filter-label">Sort by</div>
+      <div class="filter-chips">
+        <button class="chip active" onclick="setSort('recent',this)">Recent</button>
+        <button class="chip" onclick="setSort('score',this)">Score</button>
+        <button class="chip" onclick="setSort('spike',this)">Spike</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section filter-area">
+      <div class="filter-label">Time window</div>
+      <div class="filter-chips">
+        <button class="chip" onclick="setWindow(7,this)">7 days</button>
+        <button class="chip active" onclick="setWindow(30,this)">30 days</button>
+        <button class="chip" onclick="setWindow(90,this)">90 days</button>
+        <button class="chip" onclick="setWindow(365,this)">1 year</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label" style="margin-bottom:8px">Source health</div>
+      <div class="source-health">
+        <div class="health-row"><div class="health-dot idle" id="h-hn"></div><span class="health-name">Hacker News</span><span class="health-count" id="hc-hn">—</span></div>
+        <div class="health-row"><div class="health-dot idle" id="h-arxiv"></div><span class="health-name">ArXiv</span><span class="health-count" id="hc-arxiv">—</span></div>
+        <div class="health-row"><div class="health-dot idle" id="h-devto"></div><span class="health-name">DEV.to</span><span class="health-count" id="hc-devto">—</span></div>
+        <div class="health-row"><div class="health-dot idle" id="h-scholar"></div><span class="health-name">Semantic Scholar</span><span class="health-count" id="hc-scholar">—</span></div>
+        <div class="health-row"><div class="health-dot idle" id="h-gnews"></div><span class="health-name">Google News</span><span class="health-count" id="hc-gnews">—</span></div>
+        <div class="health-row"><div class="health-dot idle" id="h-gdelt"></div><span class="health-name">GDELT Global</span><span class="health-count" id="hc-gdelt">—</span></div>
+      </div>
+    </div>
+
+  </aside>
+
+  <main class="content">
+    <div class="content-header">
+      <div>
+        <div class="view-title" id="viewTitle">AI Signal — All Topics</div>
+        <div class="view-meta" id="viewMeta">Six sources · GDELT global coverage · No login required · Click Scan All to start</div>
+      </div>
+      <div class="header-btns">
+        <button class="fetch-btn global" id="globalBtn" onclick="fetchGlobal()">
+          🌐 Global Scan
+        </button>
+        <button class="fetch-btn" id="fetchBtn" onclick="fetchCurrent()">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+            <path d="M10 6A4 4 0 1 1 6 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M6 1l2 1.5L6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Fetch Latest
+        </button>
+      </div>
+    </div>
+    <div id="spikeBanner"></div>
+    <div id="errorPanel"></div>
+    <div id="mainContent">
+      <div class="empty-state">
+        <div class="empty-icon">◈</div>
+        <div class="empty-title">No signals loaded yet</div>
+        <div class="empty-sub">
+          Pulls from HN, ArXiv, DEV.to, Semantic Scholar, Google News, and GDELT.<br>
+          GDELT covers 65+ languages across all target countries.<br>
+          No login, no API key. Click <strong>Scan All Topics</strong> or <strong>Global Scan</strong>.
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast">
+  <div class="toast-title" id="toastTitle">Notice</div>
+  <div class="toast-msg" id="toastMsg"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── WATCHLIST ─────────────────────────────────────────────────────────────────
+const WATCHLIST = [
+  'OpenAI','Anthropic','Google DeepMind','Meta AI','NVIDIA','Mistral','DeepSeek',
+  'EU AI Act','chips','datacenters','robotics','xAI','Cohere','Inflection'
+];
+
+// ── COUNTRY CONFIG ────────────────────────────────────────────────────────────
+// GDELT country codes + Google News geolocation + flag emoji
+const COUNTRIES = {
+  CN: { label:'China',         flag:'🇨🇳', gdelt:'China',       gnews:'CN',  lang:'zh' },
+  TW: { label:'Taiwan',        flag:'🇹🇼', gdelt:'Taiwan',      gnews:'TW',  lang:'zh' },
+  JP: { label:'Japan',         flag:'🇯🇵', gdelt:'Japan',       gnews:'JP',  lang:'ja' },
+  GB: { label:'UK',            flag:'🇬🇧', gdelt:'Britain',     gnews:'GB',  lang:'en' },
+  CA: { label:'Canada',        flag:'🇨🇦', gdelt:'Canada',      gnews:'CA',  lang:'en' },
+  IL: { label:'Israel',        flag:'🇮🇱', gdelt:'Israel',      gnews:'IL',  lang:'he' },
+  KR: { label:'South Korea',   flag:'🇰🇷', gdelt:'Korea',       gnews:'KR',  lang:'ko' },
+  SG: { label:'Singapore',     flag:'🇸🇬', gdelt:'Singapore',   gnews:'SG',  lang:'en' },
+  DE: { label:'Germany',       flag:'🇩🇪', gdelt:'Germany',     gnews:'DE',  lang:'de' },
+  FR: { label:'France',        flag:'🇫🇷', gdelt:'France',      gnews:'FR',  lang:'fr' },
+  AE: { label:'UAE',           flag:'🇦🇪', gdelt:'UAE',         gnews:'AE',  lang:'ar' },
+  IN: { label:'India',         flag:'🇮🇳', gdelt:'India',       gnews:'IN',  lang:'en' },
+  BR: { label:'Brazil',        flag:'🇧🇷', gdelt:'Brazil',      gnews:'BR',  lang:'pt' },
+  MX: { label:'Mexico',        flag:'🇲🇽', gdelt:'Mexico',      gnews:'MX',  lang:'es' },
+  CL: { label:'Chile',         flag:'🇨🇱', gdelt:'Chile',       gnews:'CL',  lang:'es' },
+  ZW: { label:'Zimbabwe',      flag:'🇿🇼', gdelt:'Zimbabwe',    gnews:'ZW',  lang:'en' },
+  RW: { label:'Rwanda',        flag:'🇷🇼', gdelt:'Rwanda',      gnews:'RW',  lang:'en' },
+};
+
+// Language display names
+const LANG_NAMES = {
+  en:'EN', zh:'ZH', ja:'JA', ko:'KO', de:'DE', fr:'FR',
+  ar:'AR', he:'HE', pt:'PT', es:'ES', hi:'HI'
+};
+
+// ── AI TAXONOMY ───────────────────────────────────────────────────────────────
+// Each category: array of [regex, weight] pairs — weight used for spike scoring
+const TAXONOMY = {
+  models:     { label:'Model Launch', css:'tax-models',
+    patterns: [/\b(model launch|new model|GPT|Claude|Gemini|Llama|Mistral|DeepSeek|Grok|release|foundation model|LLM release|weights released)\b/i] },
+  regulation: { label:'Regulation', css:'tax-regulation',
+    patterns: [/\b(regulation|regulat|AI Act|executive order|policy|law|bill|legislation|compliance|ban|restrict|govern)\b/i] },
+  'chips-hw': { label:'Chips', css:'tax-chips-hw',
+    patterns: [/\b(chip|semiconductor|GPU|TPU|NPU|NVIDIA|AMD|Intel|TSMC|wafer|fab|H100|H200|Blackwell|hardware accelerat)\b/i] },
+  funding:    { label:'Funding', css:'tax-funding',
+    patterns: [/\b(funding|invest|raise|billion|million|valuation|Series [A-Z]|IPO|acquisition|acqui|merger|venture)\b/i] },
+  safety:     { label:'Safety', css:'tax-safety',
+    patterns: [/\b(safety|alignment|risk|harm|bias|red.team|jailbreak|misuse|RLHF|constitutional|guardrail|hallucin)\b/i] },
+  defense:    { label:'Defense', css:'tax-defense',
+    patterns: [/\b(defense|military|weapon|autonomous weapon|lethal|drone|warfare|cyber|intelligence agenc|national security|Pentagon|DARPA)\b/i] },
+  labor:      { label:'Labor', css:'tax-labor',
+    patterns: [/\b(job|workforce|layoff|hire|worker|employment|automat|replac|strike|union|talent|skill)\b/i] },
+  copyright:  { label:'Copyright', css:'tax-copyright',
+    patterns: [/\b(copyright|IP|intellectual property|lawsuit|training data|scraping|fair use|license|plagiar|infring)\b/i] },
+  compute:    { label:'Compute', css:'tax-compute',
+    patterns: [/\b(compute|datacenter|data center|cloud|inference|training run|flop|energy|power|cooling|cluster)\b/i] },
+  sovereign:  { label:'Sovereign AI', css:'tax-sovereign',
+    patterns: [/\b(sovereign AI|national AI|state AI|domestic model|AI strategy|AI sovereignty|strategic autonomy|AI competit)\b/i] },
+  minerals:   { label:'Critical Minerals', css:'tax-minerals',
+    patterns: [/\b(rare.earth|critical mineral|lithium|cobalt|nickel|manganese|graphite|neodymium|dysprosium|gallium|germanium|indium|tungsten|tantalum|mining|mine output|mineral supply|mineral reserve|DRC Congo|Chile lithium|Australian mining|refin|smelter|ore)\b/i] },
+};
+
+// ── HIGH-TRUST PUBLISHERS ─────────────────────────────────────────────────────
+// Articles from these domains get a +1 tier boost in spike scoring
+const HIGH_TRUST_DOMAINS = [
+  'reuters.com','bloomberg.com','ft.com','wsj.com','nytimes.com','theguardian.com',
+  'techcrunch.com','wired.com','nature.com','science.org','economist.com',
+  'axios.com','politico.com','scmp.com','nikkeasia.com','thehindu.com',
+  'yomiuri.co.jp','lemonde.fr','spiegel.de','xinhua.net','globaltimes.cn',
+  'haaretz.com','jpost.com','koreatimes.co.kr','straitstimes.com',
+  'thenationalnews.com','timesofindia.com','folha.uol.com.br'
+];
+
+// ── TOPICS ────────────────────────────────────────────────────────────────────
+const TOPICS = {
+  agents: {
+    label:'Agentic Frameworks', color:'#3dd6b0',
+    sources:['hn','devto','arxiv','scholar','gnews'],
+    hn:     ['AI agent framework','agentic workflow LLM','multi-agent system','LangChain AutoGen CrewAI'],
+    devto:  ['ai-agents','llm','machinelearning'],
+    arxiv:  'ti:agentic+OR+ti:"AI+agent"+OR+ti:"multi-agent"',
+    scholar:'agentic AI framework autonomous agent',
+    gnews:  ['AI agentic framework 2025','LangChain AutoGen multi-agent AI','autonomous AI agent tools'],
+    tags:   ['agents','frameworks','orchestration','LLM']
+  },
+  frontier: {
+    label:'Frontier Models', color:'#c8f135',
+    sources:['gnews','hn','arxiv','scholar','gdelt'],
+    hn:     ['GPT-5 Claude Gemini new model release','frontier model benchmark','foundation model launch 2025','LLM release weights open'],
+    arxiv:  'ti:"large+language+model"+OR+ti:"foundation+model"+OR+ti:"frontier+model"',
+    scholar:'frontier model GPT Claude Gemini Llama capability evaluation',
+    gnews:  ['OpenAI GPT model release 2025','Anthropic Claude new model','Google Gemini update','Meta Llama release','Mistral DeepSeek model'],
+    gdelt:  ['OpenAI model launch','Anthropic Claude release','Google Gemini','Meta Llama','Mistral AI','DeepSeek model'],
+    tags:   ['frontier','models','capability','release']
+  },
+  testing: {
+    label:'AI Testing & Evals', color:'#5ba3f5',
+    sources:['hn','devto','arxiv','scholar','gnews'],
+    hn:     ['LLM evaluation benchmark','AI red teaming','model evaluation evals','AI testing'],
+    devto:  ['aieval','llm','testing'],
+    arxiv:  'ti:evaluation+AND+(ti:"language+model"+OR+ti:LLM)+OR+ti:"AI+benchmark"',
+    scholar:'LLM evaluation benchmark testing red teaming',
+    gnews:  ['AI model evaluation benchmark 2025','LLM red teaming testing','AI safety evaluation'],
+    tags:   ['evals','benchmarks','red-teaming','testing']
+  },
+  simulation: {
+    label:'AI Simulation', color:'#b08ef5',
+    sources:['arxiv','scholar','hn','gnews'],
+    hn:     ['AI simulation environment','synthetic data generation AI','reinforcement learning environment','digital twin machine learning'],
+    arxiv:  'ti:simulation+AND+cat:cs.AI+OR+ti:"synthetic+data"+AND+ti:neural',
+    scholar:'AI simulation synthetic data digital twin reinforcement learning',
+    gnews:  ['AI simulation digital twin 2025','synthetic data AI generation','reinforcement learning simulation'],
+    tags:   ['simulation','synthetic-data','RL','digital-twins']
+  },
+  enterprise: {
+    label:'Enterprise AI', color:'#f5a623',
+    sources:['gnews','devto','hn','scholar'],
+    hn:     ['enterprise AI deployment production','AI ROI business results','LLM production lessons learned','AI at work company'],
+    devto:  ['ai','productivity','devops'],
+    scholar:'enterprise AI deployment adoption organizational',
+    gnews:  ['enterprise AI deployment 2025','AI business ROI case study','company AI implementation results','AI at work productivity'],
+    tags:   ['enterprise','deployment','ROI','production']
+  },
+  research: {
+    label:'Research & Papers', color:'#f57ab0',
+    sources:['gnews','scholar','arxiv','hn'],
+    hn:     ['AI research paper 2025','foundation model paper','AI conference keynote talk'],
+    arxiv:  'cat:cs.AI+AND+ti:"large+language+model"+OR+cat:cs.LG+AND+ti:"foundation+model"',
+    scholar:'large language model foundation model AI 2024 2025',
+    gnews:  ['AI research breakthrough 2025','large language model paper published','AI conference NeurIPS ICML 2025'],
+    tags:   ['research','papers','LLM','breakthroughs']
+  },
+  global: {
+    label:'Global Signals', color:'#c8f135',
+    sources:['gdelt','gnews'],
+    gnews:  ['China AI regulation 2025','EU AI Act implementation','India AI policy','Japan AI strategy','sovereign AI national'],
+    gdelt:  ['artificial intelligence regulation','AI chip export','sovereign AI strategy','AI national policy'],
+    tags:   ['global','policy','geopolitics','regulation']
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════════════
+const allResults      = {};
+const sourceStats     = { hn:0, arxiv:0, devto:0, scholar:0, gnews:0, gdelt:0 };
+// volumeLog: { [countryCode+':'+taxKey] : number[] of timestamps } for spike detection
+const volumeLog       = {};
+let currentTopic      = 'all';
+let activeFilter      = 'all';
+let activeSort        = 'recent';
+let activeTax         = 'all';
+let activeWatchlist   = new Set();
+let activeCountries   = new Set();
+let windowDays        = 30;
+let isLoading         = false;
+let spikeAlerts       = [];
+
+let autoTranslate     = true;   // on by default — toggle in header
+const errorLog        = [];     // { src, topic, cause, detail, action, raw, ts }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ERROR DIAGNOSIS ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+// Classifies a raw fetch error into a human-readable cause + recommended action.
+// Returns { cause, detail, action } — all plain English, no jargon.
+
+function diagnoseError(src, errMsg) {
+  const m = errMsg || '';
+
+  // ── HTTP status codes ──────────────────────────────────────────────────────
+  if (m.includes('429')) return {
+    cause: 'Rate limited',
+    detail: `${src} is temporarily blocking requests because too many were sent in a short window. This is the most common cause during Scan All Topics.`,
+    action: 'Wait 60–90 seconds and try Fetch Latest on this topic individually. The source will recover on its own.'
+  };
+  if (m.includes('403')) return {
+    cause: 'Access denied',
+    detail: `${src} returned a 403 Forbidden — the server understood the request but refused it. This can mean the request pattern was flagged as automated (anti-scraping), the endpoint requires authentication, or your IP has been temporarily blocked.`,
+    action: 'Try again in a few minutes. If it persists on a corporate network, your firewall or proxy may be intercepting the request. Test on a personal device or mobile hotspot to isolate.'
+  };
+  if (m.includes('401')) return {
+    cause: 'Authentication required',
+    detail: `${src} returned a 401 — this endpoint now requires an API key that wasn\'t needed before. The free tier may have changed.`,
+    action: 'Check the source\'s developer docs to see if a free API key is now required. This can be added to the tracker config.'
+  };
+  if (m.includes('503') || m.includes('502') || m.includes('504')) return {
+    cause: 'Server temporarily unavailable',
+    detail: `${src}'s servers returned a 5xx error — they are overloaded or down for maintenance. This is on their end, not yours.`,
+    action: 'Wait a few minutes and retry. These typically resolve within 5–15 minutes.'
+  };
+  if (m.includes('404')) return {
+    cause: 'Endpoint not found',
+    detail: `${src} returned a 404 — the API endpoint URL may have changed. This can happen after a source updates their API.`,
+    action: 'The tracker\'s API URL for this source may need updating. Flag this to whoever manages the tracker.'
+  };
+
+  // ── Network / connectivity ─────────────────────────────────────────────────
+  if (m.includes('Failed to fetch') || m.includes('NetworkError') || m.includes('network')) return {
+    cause: 'Network blocked or unreachable',
+    detail: `The browser could not reach ${src} at all — the request never completed. This typically means the domain is blocked by a firewall or content filter, the device has no internet connection, or a corporate proxy is intercepting HTTPS traffic.`,
+    action: 'Check your internet connection. If on a corporate network or VPN, try on a personal device or mobile hotspot. If the source works there but not here, your network policy is blocking it.'
+  };
+  if (m.includes('CORS') || m.includes('cors') || m.includes('cross-origin')) return {
+    cause: 'Cross-origin request blocked',
+    detail: `${src} blocked the browser's direct request due to CORS policy — a browser security rule that prevents websites from calling certain APIs directly. The proxy workaround failed or was itself blocked.`,
+    action: 'This source requires a server-side proxy to function from a browser. If on a restricted network, the proxy domain may also be blocked.'
+  };
+  if (m.includes('timeout') || m.includes('AbortError') || m.includes('Timeout')) return {
+    cause: 'Request timed out',
+    detail: `${src} did not respond within the allowed time window. The server may be slow, overloaded, or the network connection is degraded.`,
+    action: 'Try again — slow responses are often intermittent. If timeouts persist, the source may be experiencing an outage.'
+  };
+  if (m.includes('SSL') || m.includes('certificate') || m.includes('TLS')) return {
+    cause: 'SSL/TLS certificate error',
+    detail: `There\'s a problem with the security certificate for ${src}. On corporate networks this sometimes means a proxy is intercepting HTTPS traffic (SSL inspection).`,
+    action: 'If on a corporate network, your IT team\'s security proxy may be breaking encrypted connections to external APIs. This requires IT intervention to resolve.'
+  };
+
+  // ── Content / parse errors ─────────────────────────────────────────────────
+  if (m.includes('JSON') || m.includes('parse') || m.includes('Unexpected token') || m.includes('SyntaxError')) return {
+    cause: 'Unexpected response format',
+    detail: `${src} returned a response the tracker couldn\'t read — likely HTML instead of JSON or XML (e.g. an error page, a CAPTCHA, or a login redirect). This sometimes happens when an anti-bot system intercepts the request.`,
+    action: 'Open the source\'s website directly in a new tab to check if they\'re showing a CAPTCHA or maintenance page. If it\'s working normally, the API response format may have changed.'
+  };
+  if (m.includes('unavailable') || m.includes('empty') || m.includes('no results')) return {
+    cause: 'No results returned',
+    detail: `${src} responded successfully but returned no articles. This can mean the search query matched nothing in the current time window, or the source has temporarily empty results for this topic.`,
+    action: 'Try widening the time window in the sidebar, or scan a different topic. This is usually not an error — just a dry spell for this query.'
+  };
+
+  // ── Fallback ───────────────────────────────────────────────────────────────
+  return {
+    cause: 'Unknown error',
+    detail: `${src} failed with an unrecognised error. See the raw message below for details.`,
+    action: 'Try the scan again. If it fails consistently, note the raw error message and flag it for investigation.'
+  };
+}
+
+function logError(src, topic, errMsg) {
+  const diagnosis = diagnoseError(src, errMsg);
+  // Deduplicate — same src + cause within the last 30s counts as one
+  const recent = errorLog.find(e =>
+    e.src === src && e.cause === diagnosis.cause && Date.now() - e.ts < 30000
+  );
+  if (!recent) {
+    errorLog.push({ src, topic, ...diagnosis, raw: errMsg, ts: Date.now() });
+  }
+}
+
+function renderErrorPanel() {
+  const el = document.getElementById('errorPanel');
+  if (!el) return;
+  // Only show errors from the last scan (last 5 minutes)
+  const cutoff = Date.now() - 5 * 60 * 1000;
+  const recent = errorLog.filter(e => e.ts > cutoff);
+  if (!recent.length) { el.innerHTML = ''; return; }
+
+  const rows = recent.map(e => `
+    <div class="error-row">
+      <div class="error-row-header">
+        <span class="error-source-tag">${esc(e.src)}</span>
+        <span class="error-cause">${esc(e.cause)}</span>
+      </div>
+      <div class="error-detail">${esc(e.detail)}</div>
+      <div class="error-action">→ ${esc(e.action)}</div>
+      ${e.raw ? `<div class="error-raw">Raw: ${esc(e.raw)}</div>` : ''}
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="error-panel">
+      <div class="error-panel-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none';this.querySelector('.error-panel-toggle').textContent=this.nextElementSibling.style.display==='none'?'Show':'Hide'">
+        <div class="error-panel-title">
+          <span>⚠</span> ${recent.length} source${recent.length>1?'s':''} had errors on last scan
+        </div>
+        <span class="error-panel-toggle">Hide</span>
+      </div>
+      <div class="error-panel-body" style="display:flex">${rows}</div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRANSLATION ENGINE — Lingva public API (Google Translate proxy, no key)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Translation cache: key = `${lang}::${text}`, value = translated string
+const translationCache = {};
+// In-flight promises: prevent duplicate requests for the same string
+const translationQueue = {};
+
+// Lingva public instances — try in order, fall back if one is down
+const LINGVA_HOSTS = [
+  'https://lingva.ml',
+  'https://lingva.thedaviddelta.com',
+];
+
+async function translateText(text, sourceLang) {
+  if (!text || !sourceLang || sourceLang === 'en') return null;
+  const cacheKey = `${sourceLang}::${text.slice(0,200)}`;
+  if (translationCache[cacheKey]) return translationCache[cacheKey];
+  if (translationQueue[cacheKey]) return translationQueue[cacheKey]; // reuse in-flight
+
+  translationQueue[cacheKey] = (async () => {
+    const snippet = text.slice(0, 300); // keep requests small
+    for (const host of LINGVA_HOSTS) {
+      try {
+        const url = `${host}/api/v1/${encodeURIComponent(sourceLang)}/en/${encodeURIComponent(snippet)}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) continue;
+        const data = await res.json();
+        const translated = data?.translation;
+        if (translated) {
+          translationCache[cacheKey] = translated;
+          delete translationQueue[cacheKey];
+          return translated;
+        }
+      } catch { continue; }
+    }
+    delete translationQueue[cacheKey];
+    return null; // all hosts failed silently
+  })();
+
+  return translationQueue[cacheKey];
+}
+
+// Translate all foreign items in allResults that don't yet have translations.
+// Called after each fetch completes. Updates items in place, then re-renders.
+async function translatePendingItems() {
+  if (!autoTranslate) return;
+  const allFlat = Object.values(allResults).flat();
+  const foreign = allFlat.filter(i => i.lang && i.lang !== 'en' && !i._translated);
+
+  if (!foreign.length) return;
+
+  // Batch: translate up to 20 at a time to avoid hammering the API
+  const batch = foreign.slice(0, 20);
+  await Promise.allSettled(batch.map(async item => {
+    try {
+      const [titleEN, summaryEN] = await Promise.all([
+        translateText(item.title,   item.lang),
+        item.summary ? translateText(item.summary, item.lang) : Promise.resolve(null),
+      ]);
+      if (titleEN)   item._titleEN   = titleEN;
+      if (summaryEN) item._summaryEN = summaryEN;
+      item._translated = true;
+    } catch { item._translated = true; /* mark done even on fail */ }
+  }));
+
+  renderResults(); // re-render with translated text in place
+}
+
+function toggleAutoTranslate() {
+  autoTranslate = !autoTranslate;
+  const btn = document.getElementById('translateToggle');
+  btn.classList.toggle('active', autoTranslate);
+  if (autoTranslate) translatePendingItems();
+  renderResults();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INIT — build dynamic sidebar chips
+// ═══════════════════════════════════════════════════════════════════════════════
+function initSidebar() {
+  // Watchlist chips
+  const wc = document.getElementById('watchlistChips');
+  WATCHLIST.forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'watch-chip';
+    btn.textContent = w;
+    btn.onclick = () => toggleWatchlist(w, btn);
+    wc.appendChild(btn);
+  });
+
+  // Country chips
+  const cc = document.getElementById('countryChips');
+  Object.entries(COUNTRIES).forEach(([code, c]) => {
+    const btn = document.createElement('button');
+    btn.className = 'country-chip';
+    btn.textContent = `${c.flag} ${c.label}`;
+    btn.dataset.code = code;
+    btn.onclick = () => toggleCountry(code, btn);
+    cc.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+function setStatus(state, label) {
+  const d = document.getElementById('statusDot');
+  d.className = 'status-dot' + (state ? ' '+state : '');
+  document.getElementById('statusLabel').textContent = label;
+}
+
+let toastTimer;
+function showToast(title, msg) {
+  document.getElementById('toastTitle').textContent = title;
+  document.getElementById('toastMsg').textContent   = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 7000);
+}
+
+function showLoading(line1, line2) {
+  document.getElementById('mainContent').innerHTML =
+    `<div class="loading-state"><div class="spinner"></div>${esc(line1)}<div class="loading-sub">${esc(line2||'')}</div></div>`;
+}
+
+function lockUI() {
+  isLoading = true;
+  ['fetchBtn','scanAllBtn','globalBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.disabled = true;
+  });
+}
+
+function unlockUI() {
+  isLoading = false;
+  ['fetchBtn','scanAllBtn','globalBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.disabled = false;
+  });
+  document.getElementById('timestamp').textContent =
+    new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+  const total = Object.values(allResults).reduce((s,a) => s+a.length, 0);
+  document.getElementById('viewMeta').textContent =
+    `Updated ${new Date().toLocaleString()} · ${total} signals`;
+  setStatus('live','Live');
+}
+
+function setTopic(t, btn) {
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTopic = t;
+  const lbl = t === 'all' ? 'All Topics' : (TOPICS[t]?.label || t);
+  document.getElementById('viewTitle').textContent = `AI Signal — ${lbl}`;
+  renderResults();
+}
+
+function setFilter(f, btn) {
+  document.querySelectorAll('.chip[onclick^="setFilter"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = f;
+  renderResults();
+}
+
+function setSort(s, btn) {
+  document.querySelectorAll('.chip[onclick^="setSort"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeSort = s;
+  renderResults();
+}
+
+function setWindow(days, btn) {
+  document.querySelectorAll('.chip[onclick^="setWindow"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  windowDays = days;
+}
+
+function setTax(t, btn) {
+  document.querySelectorAll('#taxChips .chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeTax = t;
+  renderResults();
+}
+
+function toggleWatchlist(term, btn) {
+  if (activeWatchlist.has(term)) {
+    activeWatchlist.delete(term);
+    btn.classList.remove('active');
+  } else {
+    activeWatchlist.add(term);
+    btn.classList.add('active');
+  }
+  renderResults();
+}
+
+function toggleCountry(code, btn) {
+  if (activeCountries.has(code)) {
+    activeCountries.delete(code);
+    btn.classList.remove('active');
+  } else {
+    activeCountries.add(code);
+    btn.classList.add('active');
+  }
+  renderResults();
+}
+
+function updateCounts() {
+  let total = 0;
+  for (const [k, items] of Object.entries(allResults)) {
+    const n = items.length;
+    const el = document.getElementById(`count-${k}`);
+    if (el) el.textContent = n;
+    total += n;
+  }
+  document.getElementById('count-all').textContent = total;
+}
+
+function setHealthDot(src, state, count, errMsg) {
+  const d = document.getElementById(`h-${src}`);
+  const c = document.getElementById(`hc-${src}`);
+  if (d) d.className = `health-dot ${state}`;
+  if (state === 'err' && errMsg) {
+    const { cause } = diagnoseError(src, errMsg);
+    if (c) c.innerHTML = `<span style="color:var(--red)">✕ ${esc(cause)}</span>`;
+    // Add a reason line below the health row if not already there
+    const row = d?.parentElement;
+    if (row) {
+      const existing = row.querySelector('.health-reason');
+      if (existing) existing.remove();
+      const reason = document.createElement('span');
+      reason.className = 'health-reason';
+      reason.textContent = diagnoseError(src, errMsg).action.slice(0, 80) + (diagnoseError(src, errMsg).action.length > 80 ? '…' : '');
+      row.after(reason);
+    }
+  } else {
+    if (c) c.textContent = count !== null ? `${count} results` : (state === 'err' ? 'failed' : '—');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TAXONOMY CLASSIFICATION
+// ═══════════════════════════════════════════════════════════════════════════════
+function classifyTaxonomy(title, summary) {
+  const text = `${title} ${summary||''}`;
+  const hits = [];
+  for (const [key, cat] of Object.entries(TAXONOMY)) {
+    for (const pat of cat.patterns) {
+      if (pat.test(text)) { hits.push(key); break; }
+    }
+  }
+  return hits; // array of matched taxonomy keys
+}
+
+// ── LANGUAGE DETECTION (heuristic from charset + common patterns) ─────────────
+function detectLang(text, hintLang) {
+  if (hintLang && hintLang !== 'en') return hintLang;
+  if (!text) return 'en';
+  // CJK range
+  if (/[\u4E00-\u9FFF\u3400-\u4DBF]/.test(text)) return 'zh';
+  if (/[\u3040-\u309F\u30A0-\u30FF]/.test(text)) return 'ja';
+  if (/[\uAC00-\uD7AF]/.test(text))               return 'ko';
+  if (/[\u0600-\u06FF]/.test(text))               return 'ar';
+  if (/[\u0590-\u05FF]/.test(text))               return 'he';
+  // Latin-script heuristics
+  if (/\b(le|la|les|un|une|des|est|dans|pour|avec)\b/i.test(text)) return 'fr';
+  if (/\b(der|die|das|und|ist|mit|für|von|ein|eine)\b/i.test(text)) return 'de';
+  if (/\b(el|la|los|las|es|en|de|que|por|con|una)\b/i.test(text)) return 'es';
+  if (/\b(o|a|os|as|de|que|em|para|com|uma)\b/i.test(text)) return 'pt';
+  return 'en';
+}
+
+// ── COUNTRY INFERENCE FROM URL / SOURCE ──────────────────────────────────────
+function inferCountry(url, sourceName, hintCountry) {
+  if (hintCountry) return hintCountry;
+  if (!url) return null;
+  const tld = (url.match(/\.([a-z]{2})(\/|$)/) || [])[1];
+  const TLD_MAP = {
+    cn:'CN', tw:'TW', jp:'JP', kr:'KR', de:'DE', fr:'FR',
+    il:'IL', sg:'SG', ae:'AE', in:'IN', br:'BR', mx:'MX',
+    cl:'CL', zw:'ZW', rw:'RW', uk:'GB', gb:'GB', ca:'CA'
+  };
+  return TLD_MAP[tld] || null;
+}
+
+// ── WATCHLIST MATCH ───────────────────────────────────────────────────────────
+function matchWatchlist(title, summary) {
+  const text = `${title} ${summary||''}`.toLowerCase();
+  return WATCHLIST.filter(w => text.includes(w.toLowerCase()));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPIKE DETECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+// Logs each item into volumeLog by [country+tax] bucket, then checks triggers:
+// T1: 3× rolling average over 7 days
+// T2: 5+ items from same country+topic in 24h
+// T3: Item appears in 3+ different sources (cross-reference proxy via title similarity)
+
+function logVolume(item) {
+  const taxes = item.taxonomy || [];
+  const country = item.country || 'XX';
+  const keys = taxes.length ? taxes.map(t => `${country}:${t}`) : [`${country}:general`];
+  keys.forEach(k => {
+    if (!volumeLog[k]) volumeLog[k] = [];
+    volumeLog[k].push(item.ts);
+  });
+}
+
+function detectSpikes(allItems) {
+  const alerts = [];
+  const now = Date.now();
+  const day  = 86400000;
+
+  // T2: 5+ items from same country + taxonomy in 24h
+  const buckets24h = {};
+  allItems.forEach(item => {
+    const country = item.country || 'XX';
+    const taxes   = item.taxonomy?.length ? item.taxonomy : ['general'];
+    if (now - item.ts > day) return;
+    taxes.forEach(t => {
+      const k = `${country}:${t}`;
+      if (!buckets24h[k]) buckets24h[k] = [];
+      buckets24h[k].push(item);
+    });
+  });
+  for (const [k, items] of Object.entries(buckets24h)) {
+    if (items.length >= 5) {
+      const [cc, tax] = k.split(':');
+      const countryLabel = COUNTRIES[cc]?.label || cc;
+      const taxLabel     = TAXONOMY[tax]?.label  || tax;
+      alerts.push({
+        type:'volume24h', key:k,
+        msg:`<strong>${countryLabel}</strong> — ${items.length} ${taxLabel} articles in the last 24 hours.`,
+        items: items.map(i=>i.id)
+      });
+    }
+  }
+
+  // T1: 3× rolling average — compare last 7 days vs prior 7-day baseline
+  const buckets7d = {};
+  const bucketsPrior = {};
+  allItems.forEach(item => {
+    const country = item.country || 'XX';
+    const taxes   = item.taxonomy?.length ? item.taxonomy : ['general'];
+    taxes.forEach(t => {
+      const k = `${country}:${t}`;
+      const age = now - item.ts;
+      if (age < 7*day)          { if(!buckets7d[k])    buckets7d[k]=0;    buckets7d[k]++; }
+      else if (age < 14*day)    { if(!bucketsPrior[k]) bucketsPrior[k]=0; bucketsPrior[k]++; }
+    });
+  });
+  for (const [k, curr] of Object.entries(buckets7d)) {
+    const prior = bucketsPrior[k] || 1; // avoid div/0
+    if (curr >= prior * 3 && curr >= 4) {
+      const [cc, tax] = k.split(':');
+      const countryLabel = COUNTRIES[cc]?.label || cc;
+      const taxLabel     = TAXONOMY[tax]?.label  || tax;
+      if (!alerts.find(a => a.key === k)) {
+        alerts.push({
+          type:'spike3x', key:k,
+          msg:`<strong>${countryLabel} ${taxLabel}</strong> volume is <strong>${Math.round(curr/prior)}×</strong> above the prior 7-day baseline (${curr} vs ${prior} articles).`,
+          items:[]
+        });
+      }
+    }
+  }
+
+  // T3: cross-reference — items whose titles share 4+ consecutive words with another item from a different source
+  const crossRef = {};
+  const titleWords = allItems.map(i => ({
+    id: i.id, source: i.type,
+    words: i.title.toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3)
+  }));
+  for (let i = 0; i < titleWords.length; i++) {
+    for (let j = i+1; j < titleWords.length; j++) {
+      if (titleWords[i].source === titleWords[j].source) continue;
+      const setA = new Set(titleWords[i].words);
+      const shared = titleWords[j].words.filter(w => setA.has(w));
+      if (shared.length >= 3) {
+        const k = shared.slice(0,3).join(' ');
+        if (!crossRef[k]) crossRef[k] = new Set();
+        crossRef[k].add(titleWords[i].id);
+        crossRef[k].add(titleWords[j].id);
+      }
+    }
+  }
+  for (const [phrase, ids] of Object.entries(crossRef)) {
+    if (ids.size >= 3) {
+      alerts.push({
+        type:'crossref', key:'xref:'+phrase,
+        msg:`Cross-source coverage on <strong>"${phrase}…"</strong> detected across ${ids.size} different sources.`,
+        items: [...ids]
+      });
+    }
+  }
+
+  return alerts;
+}
+
+// spike score for an item — used by sort:spike
+function spikeScore(item) {
+  let score = 0;
+  // High-trust domain
+  if (HIGH_TRUST_DOMAINS.some(d => (item.url||'').includes(d))) score += 2;
+  // Has watchlist hits
+  if ((item.watchlistHits||[]).length > 0) score += 2;
+  // Foreign language (harder to find, higher signal)
+  if (item.lang && item.lang !== 'en') score += 1;
+  // Taxonomy depth
+  score += (item.taxonomy||[]).length;
+  // Source diversity proxy
+  if (item.type === 'gdelt') score += 1;
+  return score;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATA SOURCES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── HACKER NEWS ───────────────────────────────────────────────────────────────
+async function fetchHN(topicKey) {
+  const topic  = TOPICS[topicKey];
+  const cutoff = Math.floor((Date.now() - windowDays * 86400 * 1000) / 1000);
+  const query  = topic.hn[Math.floor(Math.random() * topic.hn.length)];
+  const url    = `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}`
+               + `&tags=story&numericFilters=created_at_i%3E${cutoff},points%3E5&hitsPerPage=10`;
+  const res    = await fetch(url, { signal:AbortSignal.timeout(10000) });
+  if (!res.ok) throw new Error(`HN ${res.status}`);
+  const data   = await res.json();
+  return (data.hits||[]).filter(h => h.title && h.objectID).map(h => {
+    const tax = classifyTaxonomy(h.title, h.story_text||'');
+    const country = inferCountry(h.url, '', null);
+    return enrichItem({
+      id:'hn-'+h.objectID, type:'hn',
+      title:h.title,
+      url:h.url||`https://news.ycombinator.com/item?id=${h.objectID}`,
+      hnUrl:`https://news.ycombinator.com/item?id=${h.objectID}`,
+      source:h.url ? extractDomain(h.url) : 'news.ycombinator.com',
+      date:formatDate(h.created_at), ts:new Date(h.created_at).getTime(),
+      score:h.points||0, comments:h.num_comments||0,
+      summary:h.story_text ? stripHtml(h.story_text).slice(0,200)+'…' : '',
+      tags:topic.tags, topic:topicKey, taxonomy:tax, country, lang:'en'
+    });
+  });
+}
+
+// ── ARXIV ─────────────────────────────────────────────────────────────────────
+async function fetchArXiv(topicKey) {
+  const topic  = TOPICS[topicKey];
+  const url    = `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(topic.arxiv)}`
+               + `&max_results=6&sortBy=submittedDate&sortOrder=descending`;
+  const res    = await fetch(url, { signal:AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`ArXiv ${res.status}`);
+  const text   = await res.text();
+  const xml    = new DOMParser().parseFromString(text, 'application/xml');
+  const entries= Array.from(xml.querySelectorAll('entry'));
+  const cutoffTs = Date.now() - windowDays * 86400 * 1000;
+  return entries.map(e => {
+    const title    = (e.querySelector('title')?.textContent||'').trim().replace(/\s+/g,' ');
+    const summary  = (e.querySelector('summary')?.textContent||'').trim().replace(/\s+/g,' ');
+    const published= e.querySelector('published')?.textContent||'';
+    const ts       = new Date(published).getTime();
+    const id       = e.querySelector('id')?.textContent||'';
+    const arxivId  = id.includes('/abs/') ? id.split('/abs/')[1] : id.split('/').pop();
+    const authors  = Array.from(e.querySelectorAll('author name'))
+                       .map(a=>a.textContent.trim()).slice(0,2).join(', ');
+    const tax = classifyTaxonomy(title, summary);
+    return enrichItem({
+      id:'arxiv-'+arxivId, type:'arxiv',
+      title, url:`https://arxiv.org/abs/${arxivId}`, source:'arxiv.org',
+      date:formatDate(published), ts, score:0, comments:0,
+      summary:(authors?authors+'. ':'')+summary.slice(0,240)+(summary.length>240?'…':''),
+      tags:topic.tags, topic:topicKey, taxonomy:tax, country:null, lang:'en'
+    });
+  }).filter(p => p.title && p.ts > cutoffTs);
+}
+
+// ── DEV.TO ───────────────────────────────────────────────────────────────────
+async function fetchDevTo(topicKey) {
+  const topic   = TOPICS[topicKey];
+  const tags    = topic.devto||['ai'];
+  const tag     = tags[Math.floor(Math.random()*tags.length)];
+  const url     = `https://dev.to/api/articles?tag=${encodeURIComponent(tag)}&per_page=12&top=${windowDays}`;
+  const res     = await fetch(url, { headers:{'Accept':'application/json'}, signal:AbortSignal.timeout(10000) });
+  if (!res.ok) throw new Error(`DEV.to ${res.status}`);
+  const data    = await res.json();
+  const cutoffTs = Date.now() - windowDays * 86400 * 1000;
+  return (Array.isArray(data)?data:[])
+    .filter(a => a.title && new Date(a.published_at).getTime() > cutoffTs)
+    .map(a => {
+      const tax = classifyTaxonomy(a.title, a.description||'');
+      return enrichItem({
+        id:'devto-'+a.id, type:'devto',
+        title:a.title, url:a.url, source:'dev.to',
+        date:formatDate(a.published_at), ts:new Date(a.published_at).getTime(),
+        score:a.positive_reactions_count||0, comments:a.comments_count||0,
+        summary:a.description||'',
+        tags:(a.tag_list||topic.tags).slice(0,3),
+        topic:topicKey, taxonomy:tax, country:null, lang:'en'
+      });
+    });
+}
+
+// ── SEMANTIC SCHOLAR ─────────────────────────────────────────────────────────
+async function fetchScholar(topicKey) {
+  const topic   = TOPICS[topicKey];
+  const year    = new Date().getFullYear();
+  const fromYear= windowDays<=30?year:windowDays<=90?year-1:year-2;
+  const url     = `https://api.semanticscholar.org/graph/v1/paper/search`
+                + `?query=${encodeURIComponent(topic.scholar)}`
+                + `&fields=title,abstract,year,authors,externalIds,publicationDate,citationCount,openAccessPdf`
+                + `&limit=8&publicationDateOrYear=${fromYear}-`;
+  const res     = await fetch(url, { headers:{'Accept':'application/json'}, signal:AbortSignal.timeout(12000) });
+  if (!res.ok) throw new Error(`Scholar ${res.status}`);
+  const data    = await res.json();
+  return (data.data||[]).filter(p=>p.title).map(p => {
+    const arxivId  = p.externalIds?.ArXiv;
+    const paperUrl = arxivId?`https://arxiv.org/abs/${arxivId}`:(p.openAccessPdf?.url||`https://www.semanticscholar.org/paper/${p.paperId}`);
+    const authors  = (p.authors||[]).slice(0,2).map(a=>a.name).join(', ');
+    const abstract = (p.abstract||'').slice(0,240);
+    const tax = classifyTaxonomy(p.title, p.abstract||'');
+    return enrichItem({
+      id:'scholar-'+(p.paperId||Math.random()), type:'scholar',
+      title:p.title, url:paperUrl, source:'semanticscholar.org',
+      date:p.publicationDate?formatDate(p.publicationDate):(p.year?String(p.year):''),
+      ts:p.publicationDate?new Date(p.publicationDate).getTime():(p.year?new Date(p.year+'-01-01').getTime():0),
+      score:p.citationCount||0, comments:0,
+      summary:(authors?authors+'. ':'')+abstract+(abstract.length>=240?'…':''),
+      tags:topic.tags, topic:topicKey, taxonomy:tax, country:null, lang:'en'
+    });
+  });
+}
+
+// ── GOOGLE NEWS RSS ───────────────────────────────────────────────────────────
+// Google News blocks direct browser fetches with CORS. We route through a chain
+// of free public CORS proxies, trying each in order until one succeeds.
+// Proxies tried: allorigins (wraps JSON), rss2json (parses RSS for us),
+// rssbridge public instance, and a direct attempt last.
+async function fetchGNews(topicKey, countryOverride) {
+  const topic   = TOPICS[topicKey];
+  const queries = topic.gnews||[];
+  if (!queries.length) return [];
+  const query   = countryOverride
+    ? queries[Math.floor(Math.random()*queries.length)] + ' ' + countryOverride
+    : queries[Math.floor(Math.random()*queries.length)];
+  const rssUrl  = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+
+  // Strategy 1: rss2json — free, reliable, returns parsed JSON (no XML parsing needed)
+  // Returns up to 100 items, no auth required for public feeds
+  try {
+    const r2jUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
+    const res = await fetch(r2jUrl, { signal: AbortSignal.timeout(12000) });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === 'ok' && data.items?.length) {
+        const cutoffTs = Date.now() - windowDays * 86400 * 1000;
+        return data.items.map(item => {
+          const title     = stripHtml(item.title||'');
+          const link      = item.link||item.guid||'';
+          const pubDate   = item.pubDate||'';
+          const desc      = stripHtml(item.description||item.content||'');
+          const srcName   = extractDomain(link);
+          const ts        = pubDate ? new Date(pubDate).getTime() : 0;
+          const tax       = classifyTaxonomy(title, desc);
+          const country   = inferCountry(link, srcName, countryOverride
+            ? Object.keys(COUNTRIES).find(k=>COUNTRIES[k].label===countryOverride)||null : null);
+          const lang      = detectLang(title, null);
+          return enrichItem({
+            id:'gnews-'+btoa(unescape(encodeURIComponent(link))).slice(0,20), type:'gnews',
+            title, url:link, source:srcName,
+            date:formatDate(pubDate), ts, score:0, comments:0,
+            summary:desc.slice(0,200)+(desc.length>200?'…':''),
+            tags:topic.tags, topic:topicKey, taxonomy:tax, country, lang
+          });
+        }).filter(i => i.title && i.ts > cutoffTs);
+      }
+    }
+  } catch(e) { /* fall through to next strategy */ }
+
+  // Strategy 2: allorigins — wraps response in { contents: '...' }
+  // Works when served from a real origin (not file://)
+  try {
+    const aoUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+    const res   = await fetch(aoUrl, { signal: AbortSignal.timeout(12000) });
+    if (res.ok) {
+      const data    = await res.json();
+      const xmlText = data?.contents;
+      if (xmlText?.includes('<item>')) {
+        return parseGNewsXML(xmlText, topic, countryOverride, query);
+      }
+    }
+  } catch(e) { /* fall through */ }
+
+  // Strategy 3: htmldriven CORS proxy — different infrastructure to allorigins
+  try {
+    const hdUrl = `https://corsproxy.org/?${encodeURIComponent(rssUrl)}`;
+    const res   = await fetch(hdUrl, { signal: AbortSignal.timeout(12000) });
+    if (res.ok) {
+      const xmlText = await res.text();
+      if (xmlText?.includes('<item>')) {
+        return parseGNewsXML(xmlText, topic, countryOverride, query);
+      }
+    }
+  } catch(e) { /* fall through */ }
+
+  throw new Error('Google News RSS unavailable — all proxies failed');
+}
+
+// Shared XML parser for strategies 2 & 3 above
+function parseGNewsXML(xmlText, topic, countryOverride, query) {
+  const xml      = new DOMParser().parseFromString(xmlText, 'application/xml');
+  const items    = Array.from(xml.querySelectorAll('item'));
+  const cutoffTs = Date.now() - windowDays * 86400 * 1000;
+  return items.map(item => {
+    const title   = item.querySelector('title')?.textContent?.trim()||'';
+    const link    = item.querySelector('link')?.textContent?.trim()
+                    || item.getElementsByTagName('link')[0]?.textContent?.trim()||'';
+    const pubDate = item.querySelector('pubDate')?.textContent?.trim()||'';
+    const desc    = item.querySelector('description')?.textContent?.trim()||'';
+    const srcEl   = item.querySelector('source')?.textContent?.trim()||extractDomain(link);
+    const ts      = pubDate ? new Date(pubDate).getTime() : 0;
+    const cleanTitle = stripHtml(title);
+    const tax     = classifyTaxonomy(cleanTitle, stripHtml(desc));
+    const country = inferCountry(link, srcEl, countryOverride
+      ? Object.keys(COUNTRIES).find(k=>COUNTRIES[k].label===countryOverride)||null : null);
+    const lang    = detectLang(cleanTitle, null);
+    return enrichItem({
+      id:'gnews-'+btoa(unescape(encodeURIComponent(link))).slice(0,20), type:'gnews',
+      title:cleanTitle, url:link, source:srcEl,
+      date:formatDate(pubDate), ts, score:0, comments:0,
+      summary:stripHtml(desc).slice(0,200)+(desc.length>200?'…':''),
+      tags:topic.tags, topic:topic.tags, taxonomy:tax, country, lang
+    });
+  }).filter(i => i.title && i.ts > cutoffTs);
+}
+
+// ── GDELT GKG / DOC API ───────────────────────────────────────────────────────
+// GDELT's free /api/v2/doc endpoint supports keyword + country filtering.
+// Returns JSON with articles from global press — many non-English.
+async function fetchGDELT(topicKey, countryCode) {
+  const topic   = TOPICS[topicKey];
+  const queries = topic.gdelt || topic.gnews || [];
+  if (!queries.length) return [];
+  const query   = queries[Math.floor(Math.random()*queries.length)];
+  const countryInfo = countryCode ? COUNTRIES[countryCode] : null;
+
+  // Build GDELT query: add country context if requested
+  let gdeltQuery = query;
+  if (countryInfo) gdeltQuery += ` sourcecountry:${countryInfo.gdelt}`;
+
+  const url = `https://api.gdeltproject.org/api/v2/doc/doc`
+            + `?query=${encodeURIComponent(gdeltQuery)}`
+            + `&mode=artlist&maxrecords=15&sort=datedesc`
+            + `&format=json&timespan=${windowDays<=7?'1w':windowDays<=30?'1m':'3m'}`;
+
+  const res = await fetch(url, { signal:AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`GDELT ${res.status}`);
+  const data = await res.json();
+  const articles = data.articles || [];
+  const cutoffTs = Date.now() - windowDays * 86400 * 1000;
+
+  return articles.map(a => {
+    const title   = (a.title||'').trim();
+    const srcUrl  = a.url||'';
+    const srcName = a.domain||extractDomain(srcUrl);
+    const pubDate = a.seendate||''; // format: YYYYMMDDTHHmmssZ
+    // Parse GDELT date format
+    const ts      = pubDate ? (() => {
+      const m = pubDate.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z?$/);
+      return m ? new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`).getTime() : 0;
+    })() : 0;
+    const langCode  = (a.language||'').toLowerCase().slice(0,2)||'en';
+    const country   = countryCode || inferCountry(srcUrl, srcName, null);
+    const tax       = classifyTaxonomy(title, '');
+    return enrichItem({
+      id:'gdelt-'+btoa(unescape(encodeURIComponent(srcUrl))).slice(0,22), type:'gdelt',
+      title, url:srcUrl, source:srcName,
+      date:ts ? formatDate(new Date(ts).toISOString()) : '',
+      ts, score:0, comments:0, summary:'',
+      tags:topic.tags, topic:topicKey, taxonomy:tax, country, lang:langCode
+    });
+  }).filter(i => i.title && i.ts > cutoffTs && i.ts > 0);
+}
+
+// ── ENRICH ITEM (add watchlist hits, compute spike score) ─────────────────────
+function enrichItem(item) {
+  item.watchlistHits = matchWatchlist(item.title, item.summary);
+  item.spikeScore    = spikeScore(item);
+  return item;
+}
+
+// ── RATE LIMIT HELPERS ────────────────────────────────────────────────────────
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Retry a fetch function up to maxAttempts times with exponential backoff.
+// Backs off on 429 (rate limit) and 503 (overloaded) responses.
+async function fetchWithRetry(fn, { maxAttempts = 3, baseDelay = 1500, src = '' } = {}) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const msg = err.message || '';
+      const isRateLimit = msg.includes('429') || msg.includes('503') || msg.includes('Too Many');
+      if (attempt === maxAttempts || !isRateLimit) throw err;
+      const delay = baseDelay * Math.pow(2, attempt - 1); // 1.5s, 3s, 6s
+      console.warn(`[${src}] rate limited, retrying in ${delay}ms (attempt ${attempt}/${maxAttempts})`);
+      setStatus('scanning', `${src} throttled — retrying…`);
+      await sleep(delay);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FETCH ORCHESTRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+async function fetchForTopic(topicKey) {
+  const topic = TOPICS[topicKey];
+
+  // Sources that need rate-limit protection run sequentially with retry.
+  // HN and DEV.to are lenient and can stay parallel.
+  const RATE_SENSITIVE = new Set(['arxiv', 'scholar', 'gdelt']);
+
+  const fetchers = {
+    hn:      () => fetchHN(topicKey),
+    arxiv:   () => fetchWithRetry(() => fetchArXiv(topicKey),   { src:'ArXiv',   baseDelay:2000 }),
+    devto:   () => fetchDevTo(topicKey),
+    scholar: () => fetchWithRetry(() => fetchScholar(topicKey), { src:'Scholar', baseDelay:1500 }),
+    gnews:   () => fetchGNews(topicKey, null),
+    gdelt:   () => fetchWithRetry(() => fetchGDELT(topicKey, null), { src:'GDELT', baseDelay:2500 })
+  };
+
+  // Split sources: fast ones run in parallel, rate-sensitive ones run sequentially
+  const fastSources = topic.sources.filter(s => !RATE_SENSITIVE.has(s));
+  const slowSources = topic.sources.filter(s =>  RATE_SENSITIVE.has(s));
+
+  const results = [];
+
+  // Parallel fetch for fast sources
+  const fastResults = await Promise.all(
+    fastSources.map(src =>
+      fetchers[src]()
+        .then(r  => ({ src, ok:true,  items:r       }))
+        .catch(e => ({ src, ok:false, err:e.message }))
+    )
+  );
+  results.push(...fastResults);
+
+  // Sequential fetch for rate-sensitive sources — 800ms gap between each
+  for (const src of slowSources) {
+    try {
+      const items = await fetchers[src]();
+      results.push({ src, ok:true, items });
+    } catch(e) {
+      results.push({ src, ok:false, err:e.message });
+    }
+    if (src !== slowSources[slowSources.length - 1]) await sleep(800);
+  }
+
+  const fresh = [];
+  for (const r of results) {
+    if (r.ok) {
+      sourceStats[r.src] = (sourceStats[r.src]||0) + r.items.length;
+      setHealthDot(r.src, 'ok', sourceStats[r.src]);
+      fresh.push(...r.items);
+    } else {
+      setHealthDot(r.src, 'err', null, r.err);
+      logError(r.src, topicKey, r.err);
+      console.warn(`[${r.src}/${topicKey}] ${r.err}`);
+    }
+  }
+
+  const existingIds = new Set((allResults[topicKey]||[]).map(i=>i.id));
+  const newItems    = fresh.filter(i => !existingIds.has(i.id));
+  allResults[topicKey] = [...(allResults[topicKey]||[]), ...newItems];
+  newItems.forEach(logVolume);
+  if (autoTranslate) translatePendingItems();
+  return newItems.length;
+}
+
+// Global Scan — fetch GDELT per country for all target countries
+async function fetchGlobal() {
+  if (isLoading) return;
+  lockUI();
+  const countryCodes = Object.keys(COUNTRIES);
+  const queries = ['artificial intelligence regulation','AI chip export control','frontier model','AI national strategy','sovereign AI'];
+
+  setStatus('scanning', 'Global scan…');
+  showLoading('Scanning global signals via GDELT…', `${countryCodes.length} countries · ${queries.length} queries`);
+
+  if (!allResults['global']) allResults['global'] = [];
+
+  for (const code of countryCodes) {
+    for (const q of queries.slice(0,2)) { // 2 queries per country to manage rate
+      try {
+        const topic = { gdelt:[q], gnews:[q+' '+COUNTRIES[code].label], tags:['global','geopolitics'] };
+        // Temporarily inject a mini topic for this fetch
+        TOPICS['_tmp'] = { ...TOPICS['global'], gdelt:[q], gnews:[q+' '+COUNTRIES[code].label] };
+        const items = await fetchGDELT('_tmp', code);
+        const existingIds = new Set(allResults['global'].map(i=>i.id));
+        const newItems = items.filter(i => !existingIds.has(i.id)).map(i=>({...i, topic:'global'}));
+        allResults['global'].push(...newItems);
+        newItems.forEach(logVolume);
+      } catch(e) { /* silent */ }
+    }
+  }
+  delete TOPICS['_tmp'];
+
+  // Also run Google News for each country
+  for (const code of countryCodes.slice(0,8)) { // first 8 to avoid rate limits
+    try {
+      const q = `AI artificial intelligence ${COUNTRIES[code].label} 2025`;
+      TOPICS['_tmp2'] = { ...TOPICS['global'], gnews:[q] };
+      const items = await fetchGNews('_tmp2', COUNTRIES[code].label);
+      const existingIds = new Set(allResults['global'].map(i=>i.id));
+      const newItems = items.filter(i => !existingIds.has(i.id)).map(i=>({...i, topic:'global'}));
+      allResults['global'].push(...newItems);
+    } catch(e) { /* silent */ }
+  }
+  delete TOPICS['_tmp2'];
+
+  // Run spike detection across all results
+  const allFlat = Object.values(allResults).flat();
+  spikeAlerts = detectSpikes(allFlat);
+
+  updateCounts();
+  renderResults();
+  if (autoTranslate) translatePendingItems();
+  unlockUI();
+
+  // Switch to global view
+  const globalBtn2 = document.querySelector('.topic-btn[onclick*="global"]');
+  if (globalBtn2) setTopic('global', globalBtn2);
+}
+
+async function fetchCurrent() {
+  if (isLoading) return;
+  const topic = currentTopic === 'all' ? 'agents' : currentTopic === 'global' ? 'global' : currentTopic;
+  if (currentTopic === 'global') { fetchGlobal(); return; }
+  lockUI();
+  setStatus('scanning', 'Fetching…');
+  showLoading(`Scanning ${TOPICS[topic]?.label||topic}…`, `Sources: ${TOPICS[topic]?.sources?.join(', ')||''}`);
+  try {
+    const count = await fetchForTopic(topic);
+    const allFlat = Object.values(allResults).flat();
+    spikeAlerts = detectSpikes(allFlat);
+    updateCounts();
+    renderResults();
+    if (count === 0) showToast('No new results','All items are already loaded. Try widening the time window.');
+  } catch(e) {
+    showToast('Fetch failed', e.message);
+    renderResults();
+  }
+  unlockUI();
+}
+
+async function scanAll() {
+  if (isLoading) return;
+  lockUI();
+  const keys = Object.keys(TOPICS).filter(k => !k.startsWith('_'));
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    if (key === 'global') continue;
+    setStatus('scanning', TOPICS[key].label+'…');
+    showLoading(`Scanning ${TOPICS[key].label}…`, `Sources: ${TOPICS[key].sources.join(', ')} · ${i+1} of ${keys.length-1}`);
+    try {
+      await fetchForTopic(key);
+      updateCounts();
+      renderResults();
+    } catch(e) { console.warn(key, e.message); }
+    // 1.2s pause between topics — gives ArXiv, Scholar, and GDELT time to recover
+    if (i < keys.length - 1) await sleep(1200);
+  }
+  const allFlat = Object.values(allResults).flat();
+  spikeAlerts = detectSpikes(allFlat);
+  renderResults();
+  unlockUI();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIGNAL BRIEF ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+const BRIEF_RULES = {
+  agents:[
+    { p:/\b(production|deploy|at scale|real.world|case study|shipped)\b/i,
+      t:'Real-world deployment signal — practitioners sharing what actually works in production.' },
+    { p:/\b(failure|pitfall|lesson|mistake|broke|bug)\b/i,
+      t:'Failure mode documented — these posts often save teams weeks of debugging.' },
+    { p:/\b(orchestrat|workflow|pipeline|multi.step|chain)\b/i,
+      t:'Orchestration pattern — directly relevant to agentic system design.' },
+    { p:/\b(new release|launch|announc|open.sour|github|v\d+\.\d+)\b/i,
+      t:'New tooling or release — worth a quick scan to see if it changes your stack.' },
+  ],
+  frontier:[
+    { p:/\b(beat|surpass|exceed|state.of.the.art|sota|best.ever|breakthrough)\b/i,
+      t:'Capability claim — check the benchmark methodology before repeating to clients.' },
+    { p:/\b(open.weight|open source|weights|download|hugging.face|MIT|Apache)\b/i,
+      t:'Open-weights release — changes the build-vs-buy calculus immediately.' },
+    { p:/\b(multimodal|vision|audio|video|image|code|reasoning)\b/i,
+      t:'New modality or domain coverage — expands what the model can do in production.' },
+    { p:/\b(price|cost|cheaper|API|per.token|free tier)\b/i,
+      t:'Pricing change — likely to shift which model clients select for production.' },
+  ],
+  testing:[
+    { p:/\b(red.team|adversar|jailbreak|safety|harm|misuse)\b/i,
+      t:'Safety & adversarial testing signal — relevant for any client risk conversation.' },
+    { p:/\b(benchmark|leaderboard|MMLU|HELM|score|sota)\b/i,
+      t:'Benchmark result — useful context for setting evaluation expectations.' },
+    { p:/\b(cost|latency|speed|token|efficient)\b/i,
+      t:'Performance vs. cost tradeoff — a key consideration for enterprise eval decisions.' },
+  ],
+  simulation:[
+    { p:/\b(synthetic.data|data.augment|generat)\b/i,
+      t:'Synthetic data generation — growing lever for teams with limited labeled data.' },
+    { p:/\b(digital.twin|simulation.env|virtual|physics|embodied)\b/i,
+      t:'Simulation environment advancement — expands training without real-world cost.' },
+    { p:/\b(reinforcement|reward|policy|RL)\b/i,
+      t:'RL training signal — relevant if projects touch autonomous decision-making.' },
+  ],
+  enterprise:[
+    { p:/\b(ROI|return on invest|cost.sav|productiv|revenue|business.value)\b/i,
+      t:'Business case evidence — useful for internal AI investment conversations.' },
+    { p:/\b(governance|compliance|regulat|policy|audit)\b/i,
+      t:'Governance signal — expect clients to raise this in every enterprise engagement.' },
+    { p:/\b(change.manag|adoption|resistance|culture|workforce|upskill)\b/i,
+      t:'Adoption & change management — most-overlooked factor in enterprise AI success.' },
+  ],
+  research:[
+    { p:/\b(emergent|capability|breakthrough|novel|first.ever)\b/i,
+      t:'Capability breakthrough — worth understanding before clients ask about it.' },
+    { p:/\b(reasoning|chain.of.thought|cot|step.by.step)\b/i,
+      t:'Reasoning research — directly feeds into how frontier models are improving.' },
+    { p:/\b(efficient|compress|distil|quantiz|small.model|edge)\b/i,
+      t:'Efficiency research — points toward AI running without cloud dependency.' },
+  ],
+  global:[
+    { p:/\b(rare.earth|critical mineral|lithium|cobalt|gallium|germanium|tungsten|tantalum|mining|mineral supply|mineral reserve)\b/i,
+      t:'Critical minerals signal — upstream supply chain for chips, batteries, and AI hardware. Relevant to compute access and sovereign AI capability.' },
+    { p:/\b(ban|restrict|prohibit|sanction|block)\b/i,
+      t:'Restriction or ban signal — monitor for spillover into your clients\' operating environments.' },
+    { p:/\b(sovereign|national.AI|domestic.model|AI.strategy|state.AI)\b/i,
+      t:'Sovereign AI move — countries staking geopolitical positions on AI infrastructure.' },
+    { p:/\b(chip|semiconductor|export.control|TSMC|Huawei|H100|supply.chain)\b/i,
+      t:'Chip supply chain signal — upstream constraint on AI compute globally.' },
+    { p:/\b(invest|fund|billion|partnership|initiative|program)\b/i,
+      t:'Public or sovereign investment — signals where national AI capacity is being built.' },
+  ]
+};
+
+const UNIVERSAL_RULES = [
+  { p:/\b(open.sour|OSS|Apache|MIT licen|hugging.face|github\.com)\b/i,
+    t:'Open-source release — check if this changes the build-vs-buy calculus for your clients.' },
+  { p:/\b(regulation|EU AI Act|executive order|congress|senate|FTC|GDPR)\b/i,
+    t:'Regulatory development — clients in regulated industries will be tracking this closely.' },
+  { p:/\b(job|workforce|layoff|hire|talent|skill.gap|replac)\b/i,
+    t:'Workforce impact signal — likely to surface in stakeholder conversations.' },
+];
+
+function scoreTier(item) {
+  if (item.type==='hn')     return item.score>=200?'high':item.score>=50?'med':'low';
+  if (item.type==='scholar')return item.score>=50?'high':item.score>=10?'med':'low';
+  if (item.type==='devto')  return item.score>=100?'high':item.score>=20?'med':'low';
+  if (item.type==='gdelt')  return HIGH_TRUST_DOMAINS.some(d=>(item.url||'').includes(d))?'high':'med';
+  return 'med';
+}
+
+const SRC_CTX = {
+  hn:     {high:'High practitioner traction on HN',med:'Gaining HN traction',low:'HN discussion'},
+  arxiv:  {high:'Recent preprint',med:'Recent preprint',low:'Preprint'},
+  devto:  {high:'High-engagement practitioner post',med:'Developer community interest',low:'Developer post'},
+  scholar:{high:'Well-cited research',med:'Peer-reviewed research',low:'Academic paper'},
+  gnews:  {high:'In the news',med:'Press coverage',low:'News mention'},
+  gdelt:  {high:'High-trust global press',med:'International press coverage',low:'Global news signal'},
+};
+
+function generateSignalBrief(item) {
+  const text  = `${item.title} ${item.summary||''}`;
+  const topic = item.topic;
+  const tier  = scoreTier(item);
+  for (const r of (BRIEF_RULES[topic]||[])) { if(r.p.test(text)) return {text:r.t, tier}; }
+  for (const r of UNIVERSAL_RULES)          { if(r.p.test(text)) return {text:r.t, tier}; }
+  // Taxonomy-driven fallback
+  if (item.taxonomy?.includes('regulation'))  return {text:'Regulatory signal — monitor for client exposure.', tier};
+  if (item.taxonomy?.includes('chips-hw'))    return {text:'Hardware / chip signal — upstream AI supply chain.', tier};
+  if (item.taxonomy?.includes('minerals'))    return {text:'Critical minerals — upstream of chips and AI hardware. Included because compute capacity depends on this supply chain.', tier};
+  if (item.taxonomy?.includes('funding'))     return {text:'Investment signal — shifting competitive landscape.', tier};
+  if (item.taxonomy?.includes('sovereign'))   return {text:'Sovereign AI move — national positioning in play.', tier};
+  if (item.taxonomy?.includes('defense'))     return {text:'Defense application — geopolitical AI dimension.', tier};
+  // Language-aware fallback for foreign items
+  if (item.lang && item.lang !== 'en') {
+    const cc = COUNTRIES[item.country];
+    return {text:`${cc?cc.flag+' ':''} ${LANG_NAMES[item.lang]||item.lang.toUpperCase()} language coverage — translate for full context.`, tier};
+  }
+  const srcCtx = SRC_CTX[item.type]||{high:'Notable',med:'Worth noting',low:'Signal'};
+  const prefix = srcCtx[tier];
+  const topicLabel = TOPICS[topic]?.label||'AI';
+  if (tier==='high'&&item.type==='hn')     return {text:`${prefix} — ${item.score} points signals strong practitioner interest.`, tier};
+  if (tier==='high'&&item.type==='scholar') return {text:`${prefix} with ${item.score} citations — established reference in ${topicLabel}.`, tier};
+  return {text:`${prefix} in ${topicLabel} — scan for relevance to current engagements.`, tier};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════════════════════
+function getVisible() {
+  let items = [];
+  if (currentTopic === 'all') {
+    for (const list of Object.values(allResults)) items.push(...list);
+  } else {
+    items = allResults[currentTopic]||[];
+  }
+  // Source filter
+  if (activeFilter !== 'all') items = items.filter(i => i.type === activeFilter);
+  // Taxonomy filter
+  if (activeTax !== 'all') items = items.filter(i => (i.taxonomy||[]).includes(activeTax));
+  // Watchlist filter
+  if (activeWatchlist.size > 0) {
+    items = items.filter(i => (i.watchlistHits||[]).some(w => activeWatchlist.has(w)));
+  }
+  // Country filter
+  if (activeCountries.size > 0) {
+    items = items.filter(i => i.country && activeCountries.has(i.country));
+  }
+  // Sort
+  return [...items].sort((a,b) => {
+    if (activeSort==='score') return b.score-a.score;
+    if (activeSort==='spike') return b.spikeScore-a.spikeScore;
+    return b.ts-a.ts;
+  });
+}
+
+const TYPE_LABELS = { hn:'HN', arxiv:'ArXiv', devto:'DEV.to', scholar:'Scholar', gnews:'G.News', gdelt:'GDELT' };
+
+function renderCard(item) {
+  const typeLabel   = TYPE_LABELS[item.type]||item.type;
+  const tags        = (item.tags||[]).slice(0,3).map(t=>`<span class="card-tag">${esc(t)}</span>`).join('');
+  const scoreHtml   = item.score>0 ? `<div class="card-score">▲ ${item.score}</div>` : '';
+  const commentBtn  = item.comments>0&&item.hnUrl
+    ? `<a href="${esc(item.hnUrl)}" target="_blank" rel="noopener" class="card-link-btn">💬 ${item.comments}</a>` : '';
+
+  // Country + language badge
+  const cc          = item.country ? COUNTRIES[item.country] : null;
+  const countryBadge= cc ? `<span class="card-country">${cc.flag} ${cc.label}</span>` : '';
+  const isForeign   = item.lang && item.lang !== 'en';
+  const langName    = LANG_NAMES[item.lang]||((item.lang||'').toUpperCase());
+  const langBadge   = item.lang ? `<span class="card-lang${isForeign?' foreign':''}">${langName}</span>` : '';
+
+  // Inline translation — show EN version if available, original as subtitle
+  // If autoTranslate is on but translation not yet ready, show a shimmer hint
+  let displayTitle   = esc(item.title);
+  let displaySummary = item.summary ? esc(item.summary) : '';
+  let translationNote = '';
+
+  if (isForeign) {
+    if (autoTranslate) {
+      if (item._titleEN) {
+        // Translation ready — show EN as primary, original as small subtitle
+        displayTitle   = esc(item._titleEN);
+        displaySummary = item._summaryEN ? esc(item._summaryEN) : displaySummary;
+        translationNote = `<div class="card-title-translated">${esc(item.title)}</div>`;
+      } else {
+        // Still translating — show original with a subtle indicator
+        translationNote = `<div class="translating">⟳ translating…</div>`;
+      }
+    } else {
+      // Auto-translate off — show original + link to Google Translate
+      const gtUrl = `https://translate.google.com/translate?sl=auto&tl=en&u=${encodeURIComponent(item.url||'')}`;
+      translationNote = `<a href="${esc(gtUrl)}" target="_blank" rel="noopener" class="translate-btn">⇄ Open in Google Translate</a>`;
+    }
+  }
+
+  // Taxonomy chips
+  const taxChips = (item.taxonomy||[]).slice(0,4).map(t => {
+    const cat = TAXONOMY[t];
+    return cat ? `<span class="tax-chip ${cat.css}">${cat.label}</span>` : '';
+  }).join('');
+
+  // Watchlist badge
+  const wlHits = (item.watchlistHits||[]).slice(0,2);
+  const wlBadge = wlHits.length
+    ? wlHits.map(w=>`<span class="watchlist-badge">◉ ${esc(w)}</span>`).join('') : '';
+
+  // Spike flag — check if this item's id appears in any spike alert
+  const inSpike = spikeAlerts.some(a => a.items.includes(item.id));
+  const spikeBadge = inSpike ? `<span class="spike-flag">⚡ Spike</span>` : '';
+
+  const brief      = generateSignalBrief(item);
+  const briefHtml  = `<div class="signal-brief">
+    <span class="signal-brief-icon">◈</span>
+    <span class="signal-brief-text">${esc(brief.text)}</span>
+  </div>`;
+
+  const isWatchlistHit = wlHits.length > 0;
+
+  return `<div class="card signal-tier-${esc(brief.tier)}${isWatchlistHit?' watchlist-hit':''}">
+    <div>
+      <div class="card-meta">
+        <span class="card-type type-${esc(item.type)}">${typeLabel}</span>
+        ${countryBadge}${langBadge}
+        <span class="card-source">${esc(item.source||'')}</span>
+        <span class="card-date">${esc(item.date||'')}</span>
+        ${wlBadge}${spikeBadge}
+      </div>
+      <div class="card-title"><a href="${esc(item.url)}" target="_blank" rel="noopener">${displayTitle}</a></div>
+      ${translationNote}
+      ${displaySummary ? `<div class="card-summary">${displaySummary}</div>` : ''}
+      ${briefHtml}
+      ${taxChips||tags ? `<div class="card-taxonomy">${taxChips}${tags}</div>` : ''}
+    </div>
+    <div class="card-right">
+      ${scoreHtml}
+      ${commentBtn}
+      <a href="${esc(item.url)}" target="_blank" rel="noopener" class="card-link-btn">View ↗</a>
+    </div>
+  </div>`;
+}
+
+function renderSpikeBanner() {
+  const el = document.getElementById('spikeBanner');
+  if (!spikeAlerts.length) { el.innerHTML=''; return; }
+  const items = spikeAlerts.slice(0,4).map(a => `<div>⚡ ${a.msg}</div>`).join('');
+  el.innerHTML = `<div class="spike-banner">
+    <div class="spike-icon">⚡</div>
+    <div class="spike-body">
+      <div class="spike-title">Volume Spikes Detected</div>
+      <div class="spike-items">${items}</div>
+    </div>
+  </div>`;
+}
+
+function renderResults() {
+  const items = getVisible();
+  const el    = document.getElementById('mainContent');
+
+  renderSpikeBanner();
+  renderErrorPanel();
+
+  if (items.length === 0 && !isLoading) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">◈</div>
+      <div class="empty-title">No signals for this view</div>
+      <div class="empty-sub">Try Fetch Latest, Scan All Topics, or Global Scan.<br>
+      Adjust source, taxonomy, country, or watchlist filters.</div>
+    </div>`;
+    return;
+  }
+  if (items.length === 0) return;
+
+  const topLabel = currentTopic==='all'?'All Topics':(TOPICS[currentTopic]?.label||'');
+  const dateStr  = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const counts = {hn:0,arxiv:0,devto:0,scholar:0,gnews:0,gdelt:0};
+  items.forEach(i => { if(counts[i.type]!==undefined) counts[i.type]++; });
+  const srcPills = Object.entries(counts)
+    .filter(([,n])=>n>0)
+    .map(([src,n])=>`<span class="src-pill src-${src}">${TYPE_LABELS[src]} ${n}</span>`)
+    .join(' ');
+
+  // Language breakdown
+  const langs = {};
+  items.forEach(i => { if(i.lang) langs[i.lang]=(langs[i.lang]||0)+1; });
+  const langSummary = Object.entries(langs).filter(([l])=>l!=='en')
+    .map(([l,n])=>`${LANG_NAMES[l]||l.toUpperCase()}:${n}`).join(' ');
+
+  // Country breakdown
+  const ctries = {};
+  items.forEach(i => { if(i.country&&COUNTRIES[i.country]) ctries[i.country]=(ctries[i.country]||0)+1; });
+  const countrySummary = Object.entries(ctries).slice(0,5)
+    .map(([c,n])=>`${COUNTRIES[c].flag}${n}`).join(' ');
+
+  el.innerHTML = `
+    <div class="briefing-bar">
+      <span>${dateStr}</span>
+      <span class="b-div">·</span>
+      <span>${items.length} signals</span>
+      <span class="b-div">·</span>
+      <span>${topLabel}</span>
+      <span class="b-div">·</span>
+      ${srcPills}
+      ${langSummary ? `<span class="b-div">·</span><span style="color:var(--amber);font-size:9px">${langSummary}</span>` : ''}
+      ${countrySummary ? `<span class="b-div">·</span><span>${countrySummary}</span>` : ''}
+    </div>
+    <div class="cards-grid">${items.map(renderCard).join('')}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════════════════
+function extractDomain(url) {
+  try { return new URL(url).hostname.replace(/^www\./,''); } catch { return ''; }
+}
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return isNaN(d)?'':d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function stripHtml(html) {
+  const d=document.createElement('div'); d.innerHTML=html; return d.textContent||'';
+}
+function esc(s) {
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── BOOT ─────────────────────────────────────────────────────────────────────
+initSidebar();
+
+// ── LOCAL FILE DETECTION ──────────────────────────────────────────────────────
+// Detects when the file is opened directly from a local filesystem (file://)
+// rather than served from a web server. In this mode browsers block all
+// cross-origin API calls, causing every source to silently fail.
+// We show a clear, friendly explanation instead of mysterious red dots.
+(function checkLocalOrigin() {
+  if (location.protocol !== 'file:') return; // hosted correctly, nothing to do
+
+  const isMac     = navigator.platform.toUpperCase().includes('MAC');
+  const isWindows = navigator.platform.toUpperCase().includes('WIN');
+
+  const pythonCmd = isMac
+    ? 'python3 -m http.server 8000'
+    : 'python -m http.server 8000';
+
+  const openPath = isMac
+    ? 'Then open: <code>http://localhost:8000/ai-tracker-global.html</code>'
+    : 'Then open: <code>http://localhost:8000/ai-tracker-global.html</code>';
+
+  const terminalName = isMac ? 'Terminal' : 'Command Prompt';
+  const folderTip    = isMac
+    ? 'In Terminal, type <code>cd </code> then drag your file\'s folder into the window and press Enter.'
+    : 'In Command Prompt, navigate to the folder using <code>cd C:\\path\\to\\folder</code>';
+
+  // Inject warning banner into the main content area
+  const mainContent = document.getElementById('mainContent');
+  if (mainContent) {
+    mainContent.innerHTML = `
+      <div class="local-warning">
+        <div class="local-warning-title">
+          ⚠ &nbsp;Running from local file — scans will not work
+        </div>
+        <div class="local-warning-body">
+          <p>This file is open directly from your computer (<strong>file://</strong> mode).
+          Browsers block all external API calls in this mode as a security measure —
+          which is why sources show red and scans return nothing.</p>
+          <hr class="local-warning-divider"/>
+          <p><strong>Fix option 1 — Quick local server (works immediately, no account needed):</strong></p>
+          <ol>
+            <li>Open <strong>${terminalName}</strong> on your computer</li>
+            <li>${folderTip}</li>
+            <li>Run: <code>${pythonCmd}</code></li>
+            <li>${openPath}</li>
+          </ol>
+          <hr class="local-warning-divider"/>
+          <p><strong>Fix option 2 — Host it online (permanent, shareable link):</strong></p>
+          <ol>
+            <li>Create a free account at <strong>github.com</strong></li>
+            <li>Create a new public repository</li>
+            <li>Upload this file to the repository</li>
+            <li>Go to <strong>Settings → Pages</strong>, deploy from main branch</li>
+            <li>Share the <code>https://yourusername.github.io/...</code> URL with your team</li>
+          </ol>
+          <hr class="local-warning-divider"/>
+          <p style="color:var(--text-dim);font-size:11px;">
+            People who received this file and opened it from a hosted URL (https://) are not seeing this message —
+            the tracker works correctly for them. Only local file:// access triggers this restriction.
+          </p>
+        </div>
+      </div>`;
+  }
+
+  // Also update the status indicator
+  setStatus('', 'Local file mode');
+  document.getElementById('statusDot').style.background = 'var(--amber)';
+  document.getElementById('viewMeta').textContent = 'Open via a web server or hosted URL to enable scanning';
+})();
+</script>
+</body>
+</html>
