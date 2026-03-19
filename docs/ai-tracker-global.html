@@ -14,11 +14,21 @@
   --accent:#c8f135;--accent-dim:rgba(200,241,53,0.08);--accent-border:rgba(200,241,53,0.25);
   --red:#ff5f5f;--amber:#f5a623;--blue:#5ba3f5;--teal:#3dd6b0;--purple:#b08ef5;--pink:#f57ab0;
   --mono:'IBM Plex Mono',monospace;--serif:'Literata',Georgia,serif;--sans:'DM Sans',sans-serif;
+  --header-bg:rgba(12,12,14,0.97);
+  --transition-theme:background 0.25s,color 0.25s,border-color 0.25s;
 }
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;font-weight:300;min-height:100vh;line-height:1.6;}
+html.light{
+  --bg:#f5f4f0;--surface:#ffffff;--surface2:#f0efe9;--surface3:#e8e7e0;
+  --border:rgba(0,0,0,0.08);--border-strong:rgba(0,0,0,0.14);
+  --text:#1a1a1a;--text-muted:#52504a;--text-dim:#a09e96;
+  --accent:#5a7a00;--accent-dim:rgba(90,122,0,0.07);--accent-border:rgba(90,122,0,0.3);
+  --red:#c0392b;--amber:#b86e00;--blue:#1a5fb4;--teal:#1a7a5a;--purple:#6c4faa;--pink:#c0407a;
+  --header-bg:rgba(245,244,240,0.97);
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;font-weight:300;min-height:100vh;line-height:1.6;transition:var(--transition-theme);}
 
 /* HEADER */
-.site-header{border-bottom:0.5px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(12,12,14,0.97);backdrop-filter:blur(12px);z-index:100;}
+.site-header{border-bottom:0.5px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--header-bg);backdrop-filter:blur(12px);z-index:100;transition:var(--transition-theme);}
 .logo{display:flex;align-items:center;gap:12px;}
 .logo-mark{width:26px;height:26px;border:1px solid var(--accent);border-radius:4px;display:grid;place-items:center;}
 .logo-text{font-family:var(--mono);font-size:11px;letter-spacing:0.14em;color:var(--text);text-transform:uppercase;}
@@ -285,6 +295,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 /* RATE LIMIT WARNING */
 .rl-warning{font-family:var(--mono);font-size:10px;color:var(--amber);padding:3px 8px;border:0.5px solid rgba(245,166,35,0.3);border-radius:4px;display:none;}
 .rl-warning.show{display:inline-flex;align-items:center;gap:5px;}
+
+/* THEME TOGGLE */
+.theme-toggle{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);border:0.5px solid var(--border-strong);background:var(--surface2);color:var(--text-muted);cursor:pointer;transition:all 0.2s;letter-spacing:0.06em;white-space:nowrap;}
+.theme-toggle:hover{color:var(--text);border-color:var(--accent-border);}
+.theme-toggle .th-icon{font-size:13px;line-height:1;}
+/* light mode card/sidebar surface fix */
+html.light .cards-grid{background:var(--border);}
+html.light .card{background:var(--surface);}
+html.light .card:hover{background:var(--surface2);}
+html.light .sidebar{background:var(--bg);}
+html.light .signal-brief{background:rgba(90,122,0,0.06);border-left-color:var(--accent-border);}
+html.light .signal-brief-text{color:rgba(60,90,0,0.8);}
+html.light .signal-tier-high .signal-brief{background:rgba(90,122,0,0.1);border-left-color:var(--accent);}
+html.light .signal-tier-high .signal-brief-text{color:rgba(50,80,0,0.95);}
+html.light .so-what{background:rgba(90,122,0,0.07);border-left-color:var(--accent);}
+html.light .so-what-text{color:rgba(50,80,0,0.85);}
+html.light .briefing-panel-body{background:var(--surface);}
+html.light .error-panel-body{background:var(--surface);}
+html.light .loading-state{background:var(--bg);}
+html.light .health-tooltip{background:var(--surface);box-shadow:0 4px 16px rgba(0,0,0,0.12);}
 </style>
 </head>
 <body>
@@ -305,6 +335,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     </div>
   </div>
   <div class="header-right">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+      <span class="th-icon" id="themeIcon">☀</span>
+      <span id="themeLabel">Light</span>
+    </button>
     <button class="translate-toggle active" id="translateToggle" onclick="toggleAutoTranslate()">
       <span class="t-dot"></span>Auto-Translate
     </button>
@@ -2045,6 +2079,27 @@ function esc(s) {
 
 // ── BOOT ─────────────────────────────────────────────────────────────────────
 initSidebar();
+
+// ── THEME ─────────────────────────────────────────────────────────────────────
+(function initTheme() {
+  const saved = localStorage.getItem('ai-signal-theme');
+  if (saved === 'light') applyTheme('light', false);
+})();
+
+function applyTheme(mode, save = true) {
+  const isLight = mode === 'light';
+  document.documentElement.classList.toggle('light', isLight);
+  const icon  = document.getElementById('themeIcon');
+  const label = document.getElementById('themeLabel');
+  if (icon)  icon.textContent  = isLight ? '☾' : '☀';
+  if (label) label.textContent = isLight ? 'Dark' : 'Light';
+  if (save) localStorage.setItem('ai-signal-theme', mode);
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.classList.contains('light');
+  applyTheme(isLight ? 'dark' : 'light');
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // AI ENRICHMENT ENGINE
