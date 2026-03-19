@@ -242,6 +242,49 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .toast-msg{font-size:12px;color:var(--text-muted);}
 
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:2px}
+
+/* PRIORITY BADGES */
+.priority-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:2px 8px;border-radius:3px;font-weight:500;}
+.priority-regulation{background:rgba(255,95,95,0.18);color:#ff5f5f;border:0.5px solid rgba(255,95,95,0.35);}
+.priority-breakthrough{background:rgba(200,241,53,0.18);color:#c8f135;border:0.5px solid rgba(200,241,53,0.3);}
+.priority-funding{background:rgba(61,214,176,0.15);color:#3dd6b0;border:0.5px solid rgba(61,214,176,0.3);}
+.priority-geopolitics{background:rgba(176,142,245,0.15);color:#b08ef5;border:0.5px solid rgba(176,142,245,0.3);}
+.priority-safety{background:rgba(245,166,35,0.15);color:#f5a623;border:0.5px solid rgba(245,166,35,0.3);}
+.priority-chips{background:rgba(91,163,245,0.15);color:#5ba3f5;border:0.5px solid rgba(91,163,245,0.3);}
+.priority-labor{background:rgba(245,122,176,0.15);color:#f57ab0;border:0.5px solid rgba(245,122,176,0.3);}
+
+/* IMPORTANCE BORDER */
+.card.imp-5{border-left:3px solid var(--red)!important;}
+.card.imp-4{border-left:3px solid var(--amber)!important;}
+.card.imp-3{border-left:3px solid var(--accent-border)!important;}
+
+/* SO-WHAT BLOCK */
+.so-what{display:flex;align-items:flex-start;gap:7px;margin-top:7px;padding:5px 10px;border-radius:4px;background:rgba(200,241,53,0.06);border-left:2px solid var(--accent);}
+.so-what-icon{font-size:10px;flex-shrink:0;margin-top:2px;opacity:0.6;}
+.so-what-text{font-size:11.5px;color:rgba(200,241,53,0.85);line-height:1.55;font-family:var(--sans);font-weight:300;font-style:italic;}
+
+/* BRIEFING PANEL */
+.briefing-panel{margin-bottom:20px;border:0.5px solid var(--border-strong);border-radius:8px;overflow:hidden;}
+.briefing-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface2);cursor:pointer;user-select:none;}
+.briefing-panel-title{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.briefing-panel-meta{font-family:var(--mono);font-size:9px;color:var(--text-dim);}
+.briefing-panel-body{padding:16px 20px;display:none;}
+.briefing-panel-body.open{display:block;}
+.briefing-text{font-size:13px;color:var(--text-muted);line-height:1.85;white-space:pre-wrap;font-weight:300;}
+.briefing-text strong{color:var(--text);font-weight:500;}
+.briefing-actions{display:flex;gap:8px;margin-top:12px;align-items:center;}
+.briefing-gen-btn{padding:6px 14px;border:0.5px solid var(--accent-border);border-radius:5px;background:var(--accent-dim);color:var(--accent);font-family:var(--mono);font-size:10px;letter-spacing:0.1em;cursor:pointer;text-transform:uppercase;transition:all 0.15s;}
+.briefing-gen-btn:hover:not(:disabled){background:rgba(200,241,53,0.16);}
+.briefing-gen-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* ENRICH BUTTON */
+.enrich-btn{padding:7px 14px;border:0.5px solid rgba(200,241,53,0.3);border-radius:5px;background:var(--accent-dim);color:var(--accent);font-family:var(--mono);font-size:10px;letter-spacing:0.1em;cursor:pointer;text-transform:uppercase;display:flex;align-items:center;gap:7px;transition:all 0.2s;white-space:nowrap;}
+.enrich-btn:hover:not(:disabled){background:rgba(200,241,53,0.16);}
+.enrich-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* RATE LIMIT WARNING */
+.rl-warning{font-family:var(--mono);font-size:10px;color:var(--amber);padding:3px 8px;border:0.5px solid rgba(245,166,35,0.3);border-radius:4px;display:none;}
+.rl-warning.show{display:inline-flex;align-items:center;gap:5px;}
 </style>
 </head>
 <body>
@@ -367,6 +410,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
         <button class="chip active" onclick="setSort('recent',this)">Recent</button>
         <button class="chip" onclick="setSort('score',this)">Score</button>
         <button class="chip" onclick="setSort('spike',this)">Spike</button>
+        <button class="chip" onclick="setSort('importance',this)">AI Priority</button>
       </div>
     </div>
 
@@ -411,9 +455,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
           </svg>
           Fetch Latest
         </button>
+        <button class="enrich-btn" id="enrichBtn" onclick="enrichVisible()">
+          ◈ Enrich with AI
+        </button>
+        <span class="rl-warning" id="rlWarning"></span>
       </div>
     </div>
     <div id="spikeBanner"></div>
+    <div id="briefingPanel"></div>
     <div id="errorPanel"></div>
     <div id="mainContent">
       <div class="empty-state">
@@ -862,7 +911,7 @@ function lockUI() {
 
 function unlockUI() {
   isLoading = false;
-  ['fetchBtn','scanAllBtn','globalBtn'].forEach(id => {
+  ['fetchBtn','scanAllBtn','globalBtn','enrichBtn'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.disabled = false;
   });
@@ -872,6 +921,7 @@ function unlockUI() {
   document.getElementById('viewMeta').textContent =
     `Updated ${new Date().toLocaleString()} · ${total} signals`;
   setStatus('live','Live');
+  renderBriefingPlaceholder();
 }
 
 function setTopic(t, btn) {
@@ -1794,8 +1844,18 @@ function getVisible() {
   }
   // Sort
   return [...items].sort((a,b) => {
-    if (activeSort==='score') return b.score-a.score;
-    if (activeSort==='spike') return b.spikeScore-a.spikeScore;
+    if (activeSort==='score')      return b.score-a.score;
+    if (activeSort==='spike')      return b.spikeScore-a.spikeScore;
+    if (activeSort==='importance') {
+      const ai = enrichmentMap[a.id]?.importance || 0;
+      const bi = enrichmentMap[b.id]?.importance || 0;
+      return bi - ai;
+    }
+    // Default recent — but always float imp-5 to top
+    const ai = enrichmentMap[a.id]?.importance || 0;
+    const bi = enrichmentMap[b.id]?.importance || 0;
+    if (ai === 5 && bi !== 5) return -1;
+    if (bi === 5 && ai !== 5) return  1;
     return b.ts-a.ts;
   });
 }
@@ -1856,18 +1916,27 @@ function renderCard(item) {
   const spikeBadge = inSpike ? `<span class="spike-flag">⚡ Spike</span>` : '';
 
   const brief      = generateSignalBrief(item);
-  const briefHtml  = `<div class="signal-brief">
-    <span class="signal-brief-icon">◈</span>
-    <span class="signal-brief-text">${esc(brief.text)}</span>
-  </div>`;
+
+  // ── ENRICHMENT ──────────────────────────────────────────────────────────────
+  const enrich     = enrichmentMap[item.id];
+  const importance = enrich?.importance || 0;
+  const impClass   = importance >= 5 ? 'imp-5' : importance >= 4 ? 'imp-4' : importance >= 3 ? 'imp-3' : '';
+  const priorConfig = enrich?.priorityCategory ? PRIORITY_CONFIG[enrich.priorityCategory] : null;
+  const priorBadge  = priorConfig ? `<span class="priority-badge ${priorConfig.css}">${priorConfig.label}</span>` : '';
+  const soWhatHtml  = enrich?.soWhat
+    ? `<div class="so-what"><span class="so-what-icon">◈</span><span class="so-what-text">${esc(enrich.soWhat)}</span></div>`
+    : `<div class="signal-brief"><span class="signal-brief-icon">◈</span><span class="signal-brief-text">${esc(brief.text)}</span></div>`;
+  const tier = enrich ? (importance>=4?'high':importance>=3?'med':'low') : brief.tier;
+  // ── END ENRICHMENT ──────────────────────────────────────────────────────────
 
   const isWatchlistHit = wlHits.length > 0;
 
-  return `<div class="card signal-tier-${esc(brief.tier)}${isWatchlistHit?' watchlist-hit':''}">
+  return `<div class="card signal-tier-${esc(tier)}${isWatchlistHit?' watchlist-hit':''} ${impClass}">
     <div>
       <div class="card-meta">
         <span class="card-type type-${esc(item.type)}">${typeLabel}</span>
         ${countryBadge}${langBadge}
+        ${priorBadge}
         <span class="card-source">${esc(item.source||'')}</span>
         <span class="card-date">${esc(item.date||'')}</span>
         ${wlBadge}${spikeBadge}
@@ -1875,7 +1944,7 @@ function renderCard(item) {
       <div class="card-title"><a href="${esc(item.url)}" target="_blank" rel="noopener">${displayTitle}</a></div>
       ${translationNote}
       ${displaySummary ? `<div class="card-summary">${displaySummary}</div>` : ''}
-      ${briefHtml}
+      ${soWhatHtml}
       ${taxChips||tags ? `<div class="card-taxonomy">${taxChips}${tags}</div>` : ''}
     </div>
     <div class="card-right">
@@ -1976,6 +2045,174 @@ function esc(s) {
 
 // ── BOOT ─────────────────────────────────────────────────────────────────────
 initSidebar();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI ENRICHMENT ENGINE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const enrichmentMap = {};
+let enrichmentRunning = false;
+
+const PRIORITY_CONFIG = {
+  regulation:   { label:'⚖ Regulation',   css:'priority-regulation'   },
+  breakthrough: { label:'⚡ Breakthrough', css:'priority-breakthrough' },
+  funding:      { label:'💰 Funding',      css:'priority-funding'      },
+  geopolitics:  { label:'🌐 Geopolitics',  css:'priority-geopolitics'  },
+  safety:       { label:'🛡 Safety',       css:'priority-safety'       },
+  chips:        { label:'🔧 Chips',        css:'priority-chips'        },
+  labor:        { label:'👥 Labor',        css:'priority-labor'        },
+};
+
+async function enrichVisible() {
+  if (enrichmentRunning || !PROXY_BASE) return;
+  enrichmentRunning = true;
+  const btn = document.getElementById('enrichBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '◈ Enriching…'; }
+
+  const items    = getVisible().slice(0, 30);
+  const toEnrich = items.filter(i => !enrichmentMap[i.id]);
+
+  if (!toEnrich.length) {
+    if (btn) { btn.disabled = false; btn.textContent = '◈ Enrich with AI'; }
+    enrichmentRunning = false;
+    renderResults();
+    return;
+  }
+
+  const payload = toEnrich.map(i => ({
+    id: i.id, title: i.title,
+    summary: (i.summary||'').slice(0,200),
+    taxonomy: i.taxonomy||[], type: i.type,
+    source: i.source||'', country: i.country||''
+  }));
+
+  try {
+    const res = await fetch(`${PROXY_BASE}/analyze`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ articles: payload }),
+      signal: AbortSignal.timeout(45000)
+    });
+    if (res.status === 429) {
+      const data = await res.json().catch(()=>({}));
+      showRateLimitWarning(data.error || 'Rate limit reached. Try again in an hour.');
+    } else if (res.ok) {
+      const data = await res.json();
+      for (const r of (data.results||[])) { if (r.id) enrichmentMap[r.id] = r; }
+      hideRateLimitWarning();
+    }
+  } catch(e) { showToast('Enrichment failed', e.message); }
+
+  if (btn) { btn.disabled = false; btn.textContent = '◈ Enrich with AI'; }
+  enrichmentRunning = false;
+  renderResults();
+}
+
+async function generateBriefing() {
+  if (!PROXY_BASE) return;
+  const btn = document.querySelector('.briefing-gen-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+
+  const items = getVisible()
+    .map(i => ({...i, _imp:(enrichmentMap[i.id]?.importance||2)}))
+    .sort((a,b) => b._imp - a._imp).slice(0,25);
+
+  const payload = items.map(i => ({
+    title: i.title, summary: (i.summary||'').slice(0,160),
+    source: i.source||'', country: i.country||'',
+    soWhat: enrichmentMap[i.id]?.soWhat||null,
+    importance: enrichmentMap[i.id]?.importance||2
+  }));
+
+  try {
+    const res = await fetch(`${PROXY_BASE}/briefing`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ articles: payload }),
+      signal: AbortSignal.timeout(45000)
+    });
+    if (res.status === 429) {
+      showRateLimitWarning('Rate limit reached. Briefing is cached per 4-hour window.');
+    } else if (res.ok) {
+      const data = await res.json();
+      renderBriefingPanel(data.briefing, data.generatedAt, data.cached);
+      hideRateLimitWarning();
+    }
+  } catch(e) { showToast('Briefing failed', e.message); }
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Regenerate'; }
+}
+
+function renderBriefingPanel(text, generatedAt, cached) {
+  const el = document.getElementById('briefingPanel');
+  if (!el) return;
+  const timeStr = generatedAt
+    ? new Date(generatedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+  const cacheLabel = cached ? ' · cached' : '';
+  const formatted = (text||'')
+    .replace(/(THE HEADLINE MOVE|REGULATION & GEOPOLITICS|MODELS & RESEARCH|WHAT TO WATCH)/g,
+      '<strong>$1</strong>');
+  el.innerHTML = `
+    <div class="briefing-panel">
+      <div class="briefing-panel-header" onclick="toggleBriefingPanel(this)">
+        <div class="briefing-panel-title">◈ AI Signal Brief</div>
+        <span class="briefing-panel-meta">${timeStr}${cacheLabel} · click to collapse ▾</span>
+      </div>
+      <div class="briefing-panel-body open">
+        <div class="briefing-text">${formatted}</div>
+        <div class="briefing-actions">
+          <button class="briefing-gen-btn" onclick="generateBriefing()">Regenerate</button>
+          <span class="rl-warning" id="rlWarning2"></span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderBriefingPlaceholder() {
+  const el = document.getElementById('briefingPanel');
+  if (!el || el.innerHTML.trim()) return;
+  el.innerHTML = `
+    <div class="briefing-panel">
+      <div class="briefing-panel-header" onclick="toggleBriefingPanel(this)">
+        <div class="briefing-panel-title">◈ AI Signal Brief</div>
+        <span class="briefing-panel-meta">Powered by Claude Sonnet · click to expand ▾</span>
+      </div>
+      <div class="briefing-panel-body open">
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.75;margin-bottom:12px;">
+          Generate a synthesised intelligence brief from today's signals. Claude reads your top articles,
+          surfaces the headline move, flags regulation and geopolitics, and tells you what to watch next.<br><br>
+          Cached for 4 hours — the same brief is shared with anyone viewing this tracker.
+        </div>
+        <div class="briefing-actions">
+          <button class="briefing-gen-btn" onclick="generateBriefing()">◈ Generate Brief</button>
+          <span class="rl-warning" id="rlWarning2"></span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleBriefingPanel(header) {
+  const body = header.nextElementSibling;
+  const meta = header.querySelector('.briefing-panel-meta');
+  const open = body.classList.toggle('open');
+  if (meta) {
+    meta.textContent = meta.textContent
+      .replace(open?'▸':'▾', open?'▾':'▸')
+      .replace('expand','collapse').replace('collapse','expand')
+      .replace('collapse','collapse');
+  }
+}
+
+function showRateLimitWarning(msg) {
+  ['rlWarning','rlWarning2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = '⚠ '+msg; el.classList.add('show'); }
+  });
+}
+function hideRateLimitWarning() {
+  ['rlWarning','rlWarning2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+  });
+}
 
 // ── LOCAL FILE DETECTION ──────────────────────────────────────────────────────
 // Detects when the file is opened directly from a local filesystem (file://)
