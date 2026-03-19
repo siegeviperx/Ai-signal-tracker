@@ -225,9 +225,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .error-action{font-size:11px;color:var(--text-dim);font-style:italic;margin-top:2px;}
 .error-raw{font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-top:3px;opacity:0.6;}
 
-/* EXPANDED HEALTH ROW */
-.health-row{display:flex;align-items:center;gap:8px;padding:2px 0;font-family:var(--mono);font-size:10px;color:var(--text-dim);}
-.health-reason{font-size:9px;color:rgba(255,95,95,0.7);display:block;padding-left:14px;margin-top:1px;line-height:1.4;font-family:var(--sans);}
+/* HEALTH ROW TOOLTIP */
+.health-row{display:flex;align-items:center;gap:8px;padding:2px 0;font-family:var(--mono);font-size:10px;color:var(--text-dim);position:relative;}
+.health-dot-wrap{position:relative;display:flex;align-items:center;flex-shrink:0;}
+.health-tooltip{display:none;position:absolute;left:14px;top:50%;transform:translateY(-50%);z-index:200;width:260px;background:var(--surface3);border:0.5px solid var(--border-strong);border-radius:6px;padding:10px 12px;box-shadow:0 4px 20px rgba(0,0,0,0.4);}
+.health-dot-wrap:hover .health-tooltip{display:block;}
+.health-tooltip-cause{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:0.06em;margin-bottom:5px;}
+.health-tooltip-detail{font-size:11px;color:var(--text-muted);line-height:1.55;margin-bottom:5px;}
+.health-tooltip-action{font-size:10.5px;color:var(--teal);font-style:italic;line-height:1.5;}
 
 /* TOAST */
 .toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:0.5px solid rgba(255,95,95,0.35);border-left:2px solid var(--red);border-radius:6px;padding:10px 14px;max-width:340px;z-index:9999;display:none;}
@@ -378,12 +383,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
     <div class="sidebar-section">
       <div class="sidebar-label" style="margin-bottom:8px">Source health</div>
       <div class="source-health">
-        <div class="health-row"><div class="health-dot idle" id="h-hn"></div><span class="health-name">Hacker News</span><span class="health-count" id="hc-hn">—</span></div>
-        <div class="health-row"><div class="health-dot idle" id="h-arxiv"></div><span class="health-name">ArXiv</span><span class="health-count" id="hc-arxiv">—</span></div>
-        <div class="health-row"><div class="health-dot idle" id="h-devto"></div><span class="health-name">DEV.to</span><span class="health-count" id="hc-devto">—</span></div>
-        <div class="health-row"><div class="health-dot idle" id="h-scholar"></div><span class="health-name">Semantic Scholar</span><span class="health-count" id="hc-scholar">—</span></div>
-        <div class="health-row"><div class="health-dot idle" id="h-gnews"></div><span class="health-name">Google News</span><span class="health-count" id="hc-gnews">—</span></div>
-        <div class="health-row"><div class="health-dot idle" id="h-gdelt"></div><span class="health-name">GDELT Global</span><span class="health-count" id="hc-gdelt">—</span></div>
+        <div class="health-row"><div class="health-dot-wrap"><div class="health-dot idle" id="h-hn"></div></div><span class="health-name">Hacker News</span><span class="health-count" id="hc-hn">—</span></div>
+        <div class="health-row"><div class="health-dot-wrap"><div class="health-dot idle" id="h-arxiv"></div></div><span class="health-name">ArXiv</span><span class="health-count" id="hc-arxiv">—</span></div>
+        <div class="health-row"><div class="health-dot-wrap"><div class="health-dot idle" id="h-devto"></div></div><span class="health-name">DEV.to</span><span class="health-count" id="hc-devto">—</span></div>
+        <div class="health-row"><div class="health-dot-wrap"><div class="health-dot idle" id="h-scholar"></div></div><span class="health-name">Semantic Scholar</span><span class="health-count" id="hc-scholar">—</span></div>
+        <div class="health-row"><div class="health-dot-wrap"><div class="health-dot idle" id="h-gnews"></div></div><span class="health-name">Google News</span><span class="health-count" id="hc-gnews">—</span></div>
+        <div class="health-row"><div class="health-dot-wrap"><div class="health-dot idle" id="h-gdelt"></div></div><span class="health-name">GDELT Global</span><span class="health-count" id="hc-gdelt">—</span></div>
       </div>
     </div>
 
@@ -433,6 +438,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════════
+
+// ── PROXY ─────────────────────────────────────────────────────────────────────
+// Your Cloudflare Worker URL — set this after deploying the worker.
+// Format: 'https://your-worker-name.your-username.workers.dev'
+// Leave as '' to attempt direct API calls (works from localhost only).
+const PROXY_BASE = '';
 
 // ── WATCHLIST ─────────────────────────────────────────────────────────────────
 const WATCHLIST = [
@@ -933,24 +944,33 @@ function updateCounts() {
 }
 
 function setHealthDot(src, state, count, errMsg) {
-  const d = document.getElementById(`h-${src}`);
-  const c = document.getElementById(`hc-${src}`);
+  const d    = document.getElementById(`h-${src}`);
+  const c    = document.getElementById(`hc-${src}`);
+  const wrap = d?.parentElement; // the health-dot-wrap div
+
   if (d) d.className = `health-dot ${state}`;
-  if (state === 'err' && errMsg) {
-    const { cause } = diagnoseError(src, errMsg);
-    if (c) c.innerHTML = `<span style="color:var(--red)">✕ ${esc(cause)}</span>`;
-    // Add a reason line below the health row if not already there
-    const row = d?.parentElement;
-    if (row) {
-      const existing = row.querySelector('.health-reason');
-      if (existing) existing.remove();
-      const reason = document.createElement('span');
-      reason.className = 'health-reason';
-      reason.textContent = diagnoseError(src, errMsg).action.slice(0, 80) + (diagnoseError(src, errMsg).action.length > 80 ? '…' : '');
-      row.after(reason);
+
+  // Count text — always clean, no error text inline
+  if (c) c.textContent = count !== null
+    ? `${count} results`
+    : (state === 'err' ? 'failed' : '—');
+
+  // On error: inject a hover tooltip onto the dot wrapper
+  // On success/idle: remove any previous tooltip
+  if (wrap) {
+    const existing = wrap.querySelector('.health-tooltip');
+    if (existing) existing.remove();
+
+    if (state === 'err' && errMsg) {
+      const { cause, detail, action } = diagnoseError(src, errMsg);
+      const tip = document.createElement('div');
+      tip.className = 'health-tooltip';
+      tip.innerHTML = `
+        <div class="health-tooltip-cause">⚠ ${esc(cause)}</div>
+        <div class="health-tooltip-detail">${esc(detail)}</div>
+        <div class="health-tooltip-action">→ ${esc(action)}</div>`;
+      wrap.appendChild(tip);
     }
-  } else {
-    if (c) c.textContent = count !== null ? `${count} results` : (state === 'err' ? 'failed' : '—');
   }
 }
 
@@ -1164,8 +1184,9 @@ async function fetchHN(topicKey) {
 // ── ARXIV ─────────────────────────────────────────────────────────────────────
 async function fetchArXiv(topicKey) {
   const topic  = TOPICS[topicKey];
-  const url    = `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(topic.arxiv)}`
-               + `&max_results=6&sortBy=submittedDate&sortOrder=descending`;
+  const url    = PROXY_BASE
+    ? `${PROXY_BASE}/arxiv?q=${encodeURIComponent(topic.arxiv)}&max=6&sortBy=submittedDate&sortOrder=descending`
+    : `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(topic.arxiv)}&max_results=6&sortBy=submittedDate&sortOrder=descending`;
   const res    = await fetch(url, { signal:AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`ArXiv ${res.status}`);
   const text   = await res.text();
@@ -1223,10 +1244,10 @@ async function fetchScholar(topicKey) {
   const topic   = TOPICS[topicKey];
   const year    = new Date().getFullYear();
   const fromYear= windowDays<=30?year:windowDays<=90?year-1:year-2;
-  const url     = `https://api.semanticscholar.org/graph/v1/paper/search`
-                + `?query=${encodeURIComponent(topic.scholar)}`
-                + `&fields=title,abstract,year,authors,externalIds,publicationDate,citationCount,openAccessPdf`
-                + `&limit=8&publicationDateOrYear=${fromYear}-`;
+  const fields  = 'title,abstract,year,authors,externalIds,publicationDate,citationCount,openAccessPdf';
+  const url     = PROXY_BASE
+    ? `${PROXY_BASE}/scholar?q=${encodeURIComponent(topic.scholar)}&fields=${fields}&limit=8&fromYear=${fromYear}`
+    : `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(topic.scholar)}&fields=${fields}&limit=8&publicationDateOrYear=${fromYear}-`;
   const res     = await fetch(url, { headers:{'Accept':'application/json'}, signal:AbortSignal.timeout(12000) });
   if (!res.ok) throw new Error(`Scholar ${res.status}`);
   const data    = await res.json();
@@ -1262,7 +1283,21 @@ async function fetchGNews(topicKey, countryOverride) {
     : queries[Math.floor(Math.random()*queries.length)];
   const rssUrl  = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
 
-  // Strategy 1: rss2json — free, reliable, returns parsed JSON (no XML parsing needed)
+  // Strategy 1: Cloudflare Worker proxy — cleanest, no third-party dependency
+  if (PROXY_BASE) {
+    try {
+      const proxyUrl = `${PROXY_BASE}/gnews?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
+      if (res.ok) {
+        const xmlText = await res.text();
+        if (xmlText?.includes('<item>')) {
+          return parseGNewsXML(xmlText, topic, countryOverride, query);
+        }
+      }
+    } catch(e) { /* fall through */ }
+  }
+
+  // Strategy 2: rss2json — free, reliable, returns parsed JSON (no XML parsing needed)
   // Returns up to 100 items, no auth required for public feeds
   try {
     const r2jUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
@@ -1365,10 +1400,10 @@ async function fetchGDELT(topicKey, countryCode) {
   let gdeltQuery = query;
   if (countryInfo) gdeltQuery += ` sourcecountry:${countryInfo.gdelt}`;
 
-  const url = `https://api.gdeltproject.org/api/v2/doc/doc`
-            + `?query=${encodeURIComponent(gdeltQuery)}`
-            + `&mode=artlist&maxrecords=15&sort=datedesc`
-            + `&format=json&timespan=${windowDays<=7?'1w':windowDays<=30?'1m':'3m'}`;
+  const timespan = windowDays<=7?'1w':windowDays<=30?'1m':'3m';
+  const url = PROXY_BASE
+    ? `${PROXY_BASE}/gdelt?q=${encodeURIComponent(gdeltQuery)}&timespan=${timespan}&maxrecords=15`
+    : `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent(gdeltQuery)}&mode=artlist&maxrecords=15&sort=datedesc&format=json&timespan=${timespan}`;
 
   const res = await fetch(url, { signal:AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`GDELT ${res.status}`);
@@ -1409,19 +1444,32 @@ function enrichItem(item) {
 // ── RATE LIMIT HELPERS ────────────────────────────────────────────────────────
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// Per-source last-call timestamps — enforces a minimum gap between any two
+// calls to the same source regardless of which topic triggered them.
+// This is the key fix for burst blocking across a full Scan All Topics run.
+const lastCallTime = { arxiv: 0, scholar: 0, gnews: 0, gdelt: 0, hn: 0, devto: 0 };
+const MIN_GAP_MS   = { arxiv: 4000, scholar: 3000, gnews: 3500, gdelt: 3000, hn: 500, devto: 500 };
+
+async function respectRateLimit(src) {
+  const gap     = MIN_GAP_MS[src] || 1000;
+  const elapsed = Date.now() - (lastCallTime[src] || 0);
+  if (elapsed < gap) await sleep(gap - elapsed);
+  lastCallTime[src] = Date.now();
+}
+
 // Retry a fetch function up to maxAttempts times with exponential backoff.
 // Backs off on 429 (rate limit) and 503 (overloaded) responses.
-async function fetchWithRetry(fn, { maxAttempts = 3, baseDelay = 1500, src = '' } = {}) {
+async function fetchWithRetry(fn, { maxAttempts = 3, baseDelay = 3000, src = '' } = {}) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn();
     } catch (err) {
       const msg = err.message || '';
-      const isRateLimit = msg.includes('429') || msg.includes('503') || msg.includes('Too Many');
+      const isRateLimit = msg.includes('429') || msg.includes('503') || msg.includes('Too Many') || msg.includes('Failed to fetch');
       if (attempt === maxAttempts || !isRateLimit) throw err;
-      const delay = baseDelay * Math.pow(2, attempt - 1); // 1.5s, 3s, 6s
+      const delay = baseDelay * Math.pow(2, attempt - 1); // 3s, 6s, 12s
       console.warn(`[${src}] rate limited, retrying in ${delay}ms (attempt ${attempt}/${maxAttempts})`);
-      setStatus('scanning', `${src} throttled — retrying…`);
+      setStatus('scanning', `${src} throttled — retrying in ${Math.round(delay/1000)}s…`);
       await sleep(delay);
     }
   }
@@ -1438,12 +1486,12 @@ async function fetchForTopic(topicKey) {
   const RATE_SENSITIVE = new Set(['arxiv', 'scholar', 'gdelt']);
 
   const fetchers = {
-    hn:      () => fetchHN(topicKey),
-    arxiv:   () => fetchWithRetry(() => fetchArXiv(topicKey),   { src:'ArXiv',   baseDelay:2000 }),
-    devto:   () => fetchDevTo(topicKey),
-    scholar: () => fetchWithRetry(() => fetchScholar(topicKey), { src:'Scholar', baseDelay:1500 }),
-    gnews:   () => fetchGNews(topicKey, null),
-    gdelt:   () => fetchWithRetry(() => fetchGDELT(topicKey, null), { src:'GDELT', baseDelay:2500 })
+    hn:      () => respectRateLimit('hn').then(()      => fetchHN(topicKey)),
+    arxiv:   () => fetchWithRetry(async () => { await respectRateLimit('arxiv');   return fetchArXiv(topicKey);   }, { src:'ArXiv',   baseDelay:4000 }),
+    devto:   () => respectRateLimit('devto').then(()   => fetchDevTo(topicKey)),
+    scholar: () => fetchWithRetry(async () => { await respectRateLimit('scholar'); return fetchScholar(topicKey); }, { src:'Scholar', baseDelay:3000 }),
+    gnews:   () => fetchWithRetry(async () => { await respectRateLimit('gnews');   return fetchGNews(topicKey, null); }, { src:'G.News', baseDelay:3500 }),
+    gdelt:   () => fetchWithRetry(async () => { await respectRateLimit('gdelt');   return fetchGDELT(topicKey, null); }, { src:'GDELT',   baseDelay:3000 })
   };
 
   // Split sources: fast ones run in parallel, rate-sensitive ones run sequentially
@@ -1470,7 +1518,7 @@ async function fetchForTopic(topicKey) {
     } catch(e) {
       results.push({ src, ok:false, err:e.message });
     }
-    if (src !== slowSources[slowSources.length - 1]) await sleep(800);
+    if (src !== slowSources[slowSources.length - 1]) await sleep(2000);
   }
 
   const fresh = [];
@@ -1584,8 +1632,15 @@ async function scanAll() {
       updateCounts();
       renderResults();
     } catch(e) { console.warn(key, e.message); }
-    // 1.2s pause between topics — gives ArXiv, Scholar, and GDELT time to recover
-    if (i < keys.length - 1) await sleep(1200);
+    // 3s pause between topics — ArXiv requires ≥3s between requests, Scholar ≥1s sustained
+    // The global lastCallTime tracker handles per-source enforcement on top of this
+    if (i < keys.length - 1) {
+      const nextKey = keys[i + 1];
+      if (nextKey && nextKey !== 'global') {
+        showLoading(`Pausing before ${TOPICS[nextKey]?.label||nextKey}…`, 'Respecting API rate limits — this keeps sources healthy');
+      }
+      await sleep(3000);
+    }
   }
   const allFlat = Object.values(allResults).flat();
   spikeAlerts = detectSpikes(allFlat);
