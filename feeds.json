@@ -1,7 +1,37 @@
 {
-  "_readme": "Add an AI-related RSS or Atom feed by appending an object to the array below, then open a pull request. No code changes needed — the tracker reads this file live, once an hour. Required: name, url. Optional: topic (agents|frontier|testing|simulation|enterprise|research|global — defaults to research), tags (max 3).",
+  "_readme": "Add an AI-related RSS or Atom feed by appending an object to the 'feeds' array, then open a pull request. No code changes needed — the tracker re-reads this file once an hour. Required: name, url. Optional: topic (agents|frontier|testing|simulation|enterprise|research|global — defaults to research) and tags (max 3). A feed that fails is logged and skipped; it never breaks the others. Run /scan-debug to see which feeds are healthy.",
 
   "feeds": [
+    {
+      "name": "TechCrunch AI",
+      "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+      "topic": "enterprise",
+      "tags": ["news", "industry"]
+    },
+    {
+      "name": "VentureBeat AI",
+      "url": "https://venturebeat.com/category/ai/feed/",
+      "topic": "enterprise",
+      "tags": ["news", "industry"]
+    },
+    {
+      "name": "MIT Technology Review",
+      "url": "https://www.technologyreview.com/feed/",
+      "topic": "global",
+      "tags": ["news", "analysis"]
+    },
+    {
+      "name": "Ars Technica",
+      "url": "https://feeds.arstechnica.com/arstechnica/technology-lab",
+      "topic": "enterprise",
+      "tags": ["news", "technical"]
+    },
+    {
+      "name": "Wired AI",
+      "url": "https://www.wired.com/feed/tag/ai/latest/rss",
+      "topic": "global",
+      "tags": ["news", "analysis"]
+    },
     {
       "name": "Google DeepMind Blog",
       "url": "https://deepmind.google/blog/rss.xml",
@@ -13,6 +43,18 @@
       "url": "https://openai.com/news/rss.xml",
       "topic": "frontier",
       "tags": ["lab", "models"]
+    },
+    {
+      "name": "Hugging Face Blog",
+      "url": "https://huggingface.co/blog/feed.xml",
+      "topic": "frontier",
+      "tags": ["open-source", "models"]
+    },
+    {
+      "name": "Google Research Blog",
+      "url": "https://research.google/blog/rss/",
+      "topic": "research",
+      "tags": ["lab", "research"]
     },
     {
       "name": "BAIR Blog (Berkeley AI Research)",
@@ -27,28 +69,34 @@
       "tags": ["academic", "news"]
     },
     {
-      "name": "Machine Learning Mastery",
-      "url": "https://machinelearningmastery.com/feed/",
-      "topic": "enterprise",
-      "tags": ["practitioner", "tutorial"]
-    },
-    {
-      "name": "Hugging Face Blog",
-      "url": "https://huggingface.co/blog/feed.xml",
-      "topic": "frontier",
-      "tags": ["open-source", "models"]
-    },
-    {
       "name": "AI Alignment Forum",
       "url": "https://www.alignmentforum.org/feed.xml",
       "topic": "testing",
       "tags": ["safety", "alignment"]
     },
     {
-      "name": "Stanford HAI",
-      "url": "https://hai.stanford.edu/news/rss.xml",
+      "name": "Import AI (Jack Clark)",
+      "url": "https://importai.substack.com/feed",
       "topic": "global",
-      "tags": ["policy", "academic"]
+      "tags": ["newsletter", "policy"]
+    },
+    {
+      "name": "The Gradient",
+      "url": "https://thegradient.pub/rss/",
+      "topic": "research",
+      "tags": ["analysis", "research"]
+    },
+    {
+      "name": "Simon Willison",
+      "url": "https://simonwillison.net/atom/everything/",
+      "topic": "agents",
+      "tags": ["practitioner", "llm"]
+    },
+    {
+      "name": "Machine Learning Mastery",
+      "url": "https://machinelearningmastery.com/feed/",
+      "topic": "enterprise",
+      "tags": ["practitioner", "tutorial"]
     }
   ]
 }
