@@ -1,0 +1,54 @@
+{
+  "_readme": "Add an AI-related RSS or Atom feed by appending an object to the array below, then open a pull request. No code changes needed — the tracker reads this file live, once an hour. Required: name, url. Optional: topic (agents|frontier|testing|simulation|enterprise|research|global — defaults to research), tags (max 3).",
+
+  "feeds": [
+    {
+      "name": "Google DeepMind Blog",
+      "url": "https://deepmind.google/blog/rss.xml",
+      "topic": "frontier",
+      "tags": ["lab", "research"]
+    },
+    {
+      "name": "OpenAI News",
+      "url": "https://openai.com/news/rss.xml",
+      "topic": "frontier",
+      "tags": ["lab", "models"]
+    },
+    {
+      "name": "BAIR Blog (Berkeley AI Research)",
+      "url": "https://bair.berkeley.edu/blog/feed.xml",
+      "topic": "research",
+      "tags": ["academic", "research"]
+    },
+    {
+      "name": "MIT News — Artificial Intelligence",
+      "url": "https://news.mit.edu/rss/topic/artificial-intelligence2",
+      "topic": "research",
+      "tags": ["academic", "news"]
+    },
+    {
+      "name": "Machine Learning Mastery",
+      "url": "https://machinelearningmastery.com/feed/",
+      "topic": "enterprise",
+      "tags": ["practitioner", "tutorial"]
+    },
+    {
+      "name": "Hugging Face Blog",
+      "url": "https://huggingface.co/blog/feed.xml",
+      "topic": "frontier",
+      "tags": ["open-source", "models"]
+    },
+    {
+      "name": "AI Alignment Forum",
+      "url": "https://www.alignmentforum.org/feed.xml",
+      "topic": "testing",
+      "tags": ["safety", "alignment"]
+    },
+    {
+      "name": "Stanford HAI",
+      "url": "https://hai.stanford.edu/news/rss.xml",
+      "topic": "global",
+      "tags": ["policy", "academic"]
+    }
+  ]
+}
