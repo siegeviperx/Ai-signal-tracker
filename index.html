@@ -402,6 +402,152 @@ html.light .hbar-track{box-shadow:inset 0 1px 2px rgba(30,40,70,0.08);}
 /* SERVER NOTE — replaces the scan button in the sidebar */
 .server-note{font-family:var(--mono);font-size:9px;color:var(--text-dim);padding:9px 12px;border:1px solid var(--border);border-radius:7px;margin:0 12px 4px;line-height:1.65;letter-spacing:0.02em;background:var(--metal);box-shadow:inset 0 1px 0 var(--hairline-hi);}
 .server-note strong{color:var(--teal);font-weight:500;}
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE — responsive layout for screens under 768px
+   Design principles:
+   • Sidebar becomes a bottom sheet / drawer, toggled by a menu button
+   • Header collapses to logo + essential controls only
+   • Cards go full-width, single-column
+   • Search, trends, briefing stack cleanly
+   • Touch targets ≥ 44px
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── HEADER ─────────────────────────────────────────────────────────────── */
+  .site-header{padding:10px 14px;gap:8px;flex-wrap:nowrap;}
+  .logo-sub{display:none;}              /* too small for mobile header        */
+  .sources-badge{display:none;}         /* lives in sidebar instead           */
+  .header-right{gap:7px;flex-wrap:nowrap;overflow:hidden;}
+  #statusLabel{display:none;}           /* dot alone is enough                */
+  #timestamp{display:none;}
+
+  /* ── LAYOUT: kill the sidebar grid, go single-column ───────────────────── */
+  .main{display:block;}
+
+  /* ── SIDEBAR: off-canvas drawer from the left ──────────────────────────── */
+  .sidebar{
+    position:fixed;
+    top:0; left:0; bottom:0;
+    width:min(300px, 85vw);
+    z-index:500;
+    transform:translateX(-100%);
+    transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    height:100dvh;
+    background:var(--surface);
+    border-right:1px solid var(--border-strong);
+    padding-top:60px;            /* clear the header                          */
+    box-shadow:4px 0 32px rgba(0,0,0,0.35);
+  }
+  html.light .sidebar{box-shadow:4px 0 24px rgba(30,40,70,0.14);}
+  .sidebar.open{transform:translateX(0);}
+
+  /* Scrim behind the open drawer */
+  .sidebar-scrim{
+    display:none;
+    position:fixed;inset:0;
+    z-index:499;
+    background:rgba(0,0,0,0.45);
+    backdrop-filter:blur(2px);
+  }
+  .sidebar-scrim.show{display:block;}
+
+  /* ── MENU BUTTON (injected by JS) ──────────────────────────────────────── */
+  .mobile-menu-btn{
+    display:flex;align-items:center;justify-content:center;
+    width:36px;height:36px;flex-shrink:0;
+    background:var(--metal-raised);
+    border:1px solid var(--border-strong);
+    border-radius:8px;
+    cursor:pointer;
+    box-shadow:inset 0 1px 0 var(--hairline-hi);
+  }
+  .mobile-menu-btn svg{color:var(--text-muted);}
+
+  /* ── CONTENT AREA ───────────────────────────────────────────────────────── */
+  .content{padding:14px 12px;}
+  .content-header{flex-direction:column;gap:10px;margin-bottom:14px;}
+  .view-title{font-size:17px;}
+  .header-btns{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .header-btns .fetch-btn,.header-btns .enrich-btn,.header-btns .trends-btn,.header-btns .refresh-btn{
+    width:100%;justify-content:center;padding:10px 8px;font-size:10px;
+  }
+  .rl-warning{grid-column:1/-1;}
+
+  /* ── SEARCH BAR ─────────────────────────────────────────────────────────── */
+  .search-bar{flex-wrap:wrap;gap:6px;}
+  .search-input{min-width:0;flex:1 1 100%;order:-1;}
+  .search-select{flex:0 0 auto;}
+  .search-btn{flex:1;}
+  .search-clear{flex:0 0 auto;}
+
+  /* ── CARDS ───────────────────────────────────────────────────────────────── */
+  .cards-grid{gap:8px;background:transparent;}
+  .card{
+    grid-template-columns:1fr;  /* kill the right-column layout               */
+    padding:13px 14px;
+    border-radius:10px;
+  }
+  .card-right{
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px solid var(--border);
+  }
+  .card-title{font-size:14px;}
+  .card-summary{max-width:100%;font-size:12px;}
+
+  /* ── BRIEFING + TRENDS ───────────────────────────────────────────────────── */
+  .briefing-panel-body,.trends-body{padding:12px 14px;}
+  .briefing-text{font-size:12.5px;line-height:1.75;}
+  .hbar-label{width:72px;font-size:9px;}
+
+  /* ── TOPIC TABS — horizontal scroll strip ───────────────────────────────── */
+  .topic-strip{
+    display:flex;gap:6px;
+    overflow-x:auto;
+    padding:0 12px 10px;
+    margin-bottom:4px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .topic-strip::-webkit-scrollbar{display:none;}
+  .topic-pill{
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+    padding:7px 13px;border-radius:20px;
+    font-size:12px;font-family:var(--sans);font-weight:400;
+    background:var(--metal);border:1px solid var(--border-strong);
+    color:var(--text-muted);cursor:pointer;flex-shrink:0;
+    box-shadow:inset 0 1px 0 var(--hairline-hi);transition:all .15s;
+  }
+  .topic-pill.active{color:var(--accent);border-color:var(--accent-border);background:var(--accent-dim);}
+  .topic-pill .topic-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+  /* ── FILTER CHIPS — touch-friendly ─────────────────────────────────────── */
+  .filter-chips,.watchlist-chips,.country-chips{gap:5px;}
+  .chip,.watch-chip,.country-chip{padding:5px 10px;font-size:10px;}
+
+  /* ── CLOSE BUTTON inside drawer ─────────────────────────────────────────── */
+  .sidebar-close{
+    position:absolute;top:14px;right:14px;
+    width:32px;height:32px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--metal-raised);border:1px solid var(--border-strong);
+    border-radius:7px;cursor:pointer;font-size:14px;color:var(--text-muted);
+    box-shadow:inset 0 1px 0 var(--hairline-hi);
+  }
+}
+
+/* ── DESKTOP: hide mobile-only elements ────────────────────────────────── */
+@media (min-width: 769px) {
+  .mobile-menu-btn{display:none;}
+  .sidebar-scrim{display:none!important;}
+  .topic-strip{display:none;}
+  .sidebar-close{display:none;}
+}
 </style>
 </head>
 <body>
@@ -422,6 +568,11 @@ html.light .hbar-track{box-shadow:inset 0 1px 2px rgba(30,40,70,0.08);}
     </div>
   </div>
   <div class="header-right">
+    <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
       <span class="th-icon" id="themeIcon">☀</span>
       <span id="themeLabel">Light</span>
@@ -437,7 +588,9 @@ html.light .hbar-track{box-shadow:inset 0 1px 2px rgba(30,40,70,0.08);}
 </header>
 
 <div class="main">
-  <aside class="sidebar">
+  <div class="sidebar-scrim" id="sidebarScrim" onclick="toggleSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Close menu">✕</button>
 
     <div class="sidebar-section">
       <div class="sidebar-label">Topics</div>
@@ -595,6 +748,7 @@ html.light .hbar-track{box-shadow:inset 0 1px 2px rgba(30,40,70,0.08);}
       <button class="search-clear" id="searchClear" style="display:none" onclick="clearSearch()">Clear ✕</button>
     </div>
     <div id="searchStatus"></div>
+    <div id="topicStrip" class="topic-strip"></div>
     <div id="spikeBanner"></div>
     <div id="trendsPanel"></div>
     <div id="briefingPanel"></div>
@@ -1071,11 +1225,13 @@ function unlockUI() {
 
 function setTopic(t, btn) {
   document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  if (btn) btn.classList.add('active');
   currentTopic = t;
   const lbl = t === 'all' ? 'All Topics' : (TOPICS[t]?.label || t);
   document.getElementById('viewTitle').textContent = `AI Signal — ${lbl}`;
   renderResults();
+  renderTopicStrip();       // keep mobile pill strip in sync
+  closeSidebar();           // auto-close drawer after picking a topic on mobile
 }
 
 function setFilter(f, btn) {
@@ -2225,6 +2381,83 @@ function esc(s) {
 
 // ── BOOT ─────────────────────────────────────────────────────────────────────
 initSidebar();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MOBILE — sidebar drawer + topic strip
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const scrim   = document.getElementById('sidebarScrim');
+  const isOpen  = sidebar.classList.toggle('open');
+  scrim.classList.toggle('show', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : ''; // prevent scroll behind
+}
+
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+  // Only close if we're actually in mobile mode (drawer is in use)
+  if (window.innerWidth <= 768) {
+    sidebar.classList.remove('open');
+    const scrim = document.getElementById('sidebarScrim');
+    if (scrim) scrim.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+}
+
+// Close drawer on ESC
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+
+// Topic strip — horizontal scrollable pills, mobile-only (hidden via CSS on desktop)
+const TOPIC_DOTS = {
+  all:'#7a7870', agents:'#3dd6b0', frontier:'#c8f135', testing:'#5ba3f5',
+  simulation:'#b08ef5', enterprise:'#f5a623', research:'#f57ab0', global:'#c8f135',
+};
+
+function renderTopicStrip() {
+  const el = document.getElementById('topicStrip');
+  if (!el) return;
+
+  const topics = [
+    { key:'all',        label:'All Topics'   },
+    { key:'agents',     label:'Agents'       },
+    { key:'frontier',   label:'Frontier'     },
+    { key:'testing',    label:'Evals'        },
+    { key:'simulation', label:'Simulation'   },
+    { key:'enterprise', label:'Enterprise'   },
+    { key:'research',   label:'Research'     },
+    { key:'global',     label:'Global'       },
+  ];
+
+  el.innerHTML = topics.map(t => `
+    <button class="topic-pill${currentTopic === t.key ? ' active' : ''}"
+            onclick="setTopicFromStrip('${t.key}')">
+      <span class="topic-dot" style="background:${TOPIC_DOTS[t.key]||'#7a7870'}"></span>
+      ${t.label}
+    </button>`).join('');
+}
+
+function setTopicFromStrip(key) {
+  // Find and click the matching sidebar button so state stays in sync
+  const sidebarBtn = document.querySelector(`.topic-btn[onclick*="'${key}'"]`);
+  if (sidebarBtn) {
+    setTopic(key, sidebarBtn);
+  } else {
+    currentTopic = key;
+    renderResults();
+    renderTopicStrip();
+  }
+  // Scroll the active pill into view
+  setTimeout(() => {
+    const strip = document.getElementById('topicStrip');
+    const active = strip?.querySelector('.topic-pill.active');
+    active?.scrollIntoView({ inline:'center', behavior:'smooth', block:'nearest' });
+  }, 50);
+}
+
+// Initial render of the strip (data isn't needed — it's just navigation labels)
+renderTopicStrip();
 
 // ── THEME ─────────────────────────────────────────────────────────────────────
 (function initTheme() {
